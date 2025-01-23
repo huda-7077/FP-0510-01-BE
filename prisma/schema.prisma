@@ -1,16 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
 }
 
 model Sample {
@@ -20,4 +14,391 @@ model Sample {
   updatedAt DateTime @updatedAt
 
   @@map("samples")
+}
+
+model User {
+  id                Int                @id @default(autoincrement())
+  companyId         Int?
+  regencyId         Int?
+  email             String             @unique
+  password          String?
+  role              UserRole
+  fullName          String
+  dateOfBirth       DateTime
+  gender            UserGender
+  educationLevel    String
+  currentAddress    String
+  profilePicture    String?
+  phoneNumber       String?
+  cvUrl             String?
+  isVerified        Boolean
+  isDeleted         Boolean
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  company           Company?           @relation(fields: [companyId], references: [id])
+  regency           Regency?           @relation(fields: [regencyId], references: [id])
+  jobApplications   JobApplication[]
+  userBadges        UserBadge[]
+  companyReviews    CompanyReview[]
+  userSubscriptions UserSubscription[]
+  savedJobs         SavedJob[]
+  employees         Employee[]
+  userCourses       UserCourse[]
+  certificates      Certificate[]
+  userAssessments   UserAssessment[]
+
+  @@map("users")
+}
+
+model Company {
+  id               Int               @id @default(autoincrement())
+  name             String
+  description      String
+  industry         String
+  logo             String
+  links            String
+  employeeCount    Int
+  establishedYear  Int
+  isDeleted        Boolean
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  users            User[]
+  companyLocations CompanyLocation[]
+  jobs             Job[]
+  companyReviews   CompanyReview[]
+  employees        Employee[]
+
+  @@map("companies")
+}
+
+model CompanyLocation {
+  id         Int      @id @default(autoincrement())
+  companyId  Int
+  regencyId  Int
+  address    String
+  postalCode String
+  latitude   String
+  longitude  String
+  createdAt  DateTime @default(now())
+  company    Company  @relation(fields: [companyId], references: [id])
+  regency    Regency  @relation(fields: [regencyId], references: [id])
+
+  @@map("company_locations")
+}
+
+model Province {
+  id        Int       @id @default(autoincrement())
+  province  String
+  regencies Regency[]
+
+  @@map("provinces")
+}
+
+model Regency {
+  id               Int               @id @default(autoincrement())
+  provinceId       Int
+  regency          String
+  type             String
+  province         Province          @relation(fields: [provinceId], references: [id])
+  users            User[]
+  companyLocations CompanyLocation[]
+
+  @@map("regencies")
+}
+
+model Job {
+  id                  Int              @id @default(autoincrement())
+  companyId           Int
+  title               String
+  description         String
+  bannerImage         String?
+  category            String
+  salary              Int?
+  tags                String[]
+  applicationDeadline DateTime
+  isPublished         Boolean
+  requiresAssessment  Boolean
+  isDeleted           Boolean
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  company             Company          @relation(fields: [companyId], references: [id])
+  jobApplications     JobApplication[]
+  savedJobs           SavedJob[]
+  assessments         Assessment[]
+
+  @@map("jobs")
+}
+
+model JobApplication {
+  id             Int               @id @default(autoincrement())
+  jobId          Int
+  userId         Int
+  cvFile         String
+  attachment     String?
+  expectedSalary Int
+  status         ApplicationStatus
+  notes          String?
+  createdAt      DateTime          @default(now())
+  job            Job               @relation(fields: [jobId], references: [id])
+  user           User              @relation(fields: [userId], references: [id])
+  interviews     Interview[]
+
+  @@map("job_applications")
+}
+
+model UserBadge {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  badgeName   String
+  description String
+  awardedAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("user_badges")
+}
+
+model Interview {
+  id               Int            @id @default(autoincrement())
+  jobApplicationId Int
+  scheduledDate    DateTime
+  interviewerName  String
+  location         String
+  meetingLink      String?
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id])
+
+  @@map("interviews")
+}
+
+model CompanyReview {
+  id                    Int      @id @default(autoincrement())
+  companyId             Int
+  userId                Int
+  jobTitle              String
+  salaryRange           String
+  workCultureRating     Int
+  workLifeBalanceRating Int
+  facilitiesRating      Int
+  careerGrowthRating    Int
+  overallRating         Int
+  comment               String
+  createdAt             DateTime @default(now())
+  company               Company  @relation(fields: [companyId], references: [id])
+  user                  User     @relation(fields: [userId], references: [id])
+
+  @@map("company_reviews")
+}
+
+model Subscription {
+  id                Int                @id @default(autoincrement())
+  name              String
+  price             Int
+  duration          Int
+  features          String
+  createdAt         DateTime           @default(now())
+  userSubscriptions UserSubscription[]
+
+  @@map("subscriptions")
+}
+
+model UserSubscription {
+  id                 Int                @id @default(autoincrement())
+  userId             Int
+  paymentId          Int
+  subscriptionPlanId Int
+  expiredDate        DateTime
+  status             SubscriptionStatus
+  createdAt          DateTime           @default(now())
+  user               User               @relation(fields: [userId], references: [id])
+  payment            Payment            @relation(fields: [paymentId], references: [id])
+  subscription       Subscription       @relation(fields: [subscriptionPlanId], references: [id])
+
+  @@map("user_subscriptions")
+}
+
+model Payment {
+  id                Int                @id @default(autoincrement())
+  paymentMethod     String
+  paymentProof      String?
+  invoiceUrl        String?
+  status            PaymentStatus
+  createdAt         DateTime           @default(now())
+  userSubscriptions UserSubscription[]
+
+  @@map("payments")
+}
+
+model SavedJob {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  jobId     Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  job       Job      @relation(fields: [jobId], references: [id])
+
+  @@map("saved_jobs")
+}
+
+model Employee {
+  id         Int      @id @default(autoincrement())
+  companyId  Int
+  userId     Int
+  isEmployee Boolean
+  createdAt  DateTime @default(now())
+  company    Company  @relation(fields: [companyId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@map("employees")
+}
+
+model Course {
+  id              Int              @id @default(autoincrement())
+  title           String
+  description     String
+  passingScore    Int
+  status          CourseStatus
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  courseQuestions CourseQuestion[]
+  userCourses     UserCourse[]
+
+  @@map("courses")
+}
+
+model CourseQuestion {
+  id            Int            @id @default(autoincrement())
+  courseId      Int
+  question      String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  course        Course         @relation(fields: [courseId], references: [id])
+  courseOptions CourseOption[]
+
+  @@map("course_questions")
+}
+
+model CourseOption {
+  id             Int            @id @default(autoincrement())
+  questionId     Int
+  option         String
+  isCorrect      Boolean
+  createdAt      DateTime       @default(now())
+  courseQuestion CourseQuestion @relation(fields: [questionId], references: [id])
+
+  @@map("course_options")
+}
+
+model UserCourse {
+  id        Int      @id @default(autoincrement())
+  courseId  Int
+  userId    Int
+  score     Int
+  createdAt DateTime @default(now())
+  course    Course   @relation(fields: [courseId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("user_courses")
+}
+
+model Certificate {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  certificateUrl String
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@map("certificates")
+}
+
+model UserAssessment {
+  id           Int        @id @default(autoincrement())
+  assessmentId Int
+  userId       Int
+  score        Int
+  createdAt    DateTime   @default(now())
+  assessment   Assessment @relation(fields: [assessmentId], references: [id])
+  user         User       @relation(fields: [userId], references: [id])
+
+  @@map("user_assessments")
+}
+
+model Assessment {
+  id                  Int                  @id @default(autoincrement())
+  jobId               Int
+  title               String
+  description         String
+  passingScore        Int
+  status              AssessmentStatus
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  job                 Job                  @relation(fields: [jobId], references: [id])
+  assessmentQuestions AssessmentQuestion[]
+  userAssessments     UserAssessment[]
+
+  @@map("assessments")
+}
+
+model AssessmentQuestion {
+  id                Int                @id @default(autoincrement())
+  assessmentId      Int
+  question          String
+  createdAt         DateTime           @default(now())
+  assessment        Assessment         @relation(fields: [assessmentId], references: [id])
+  assessmentOptions AssessmentOption[]
+
+  @@map("assessment_questions")
+}
+
+model AssessmentOption {
+  id                 Int                @id @default(autoincrement())
+  questionId         Int
+  option             String
+  isCorrect          Boolean
+  createdAt          DateTime           @default(now())
+  assessmentQuestion AssessmentQuestion @relation(fields: [questionId], references: [id])
+
+  @@map("assessment_options")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  DEVELOPER
+}
+
+enum UserGender {
+  MALE
+  FEMALE
+}
+
+enum ApplicationStatus {
+  PENDING
+  IN_REVIEW
+  INTERVIEW_SCHEDULED
+  ACCEPTED
+  REJECTED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CourseStatus {
+  PUBLISHED
+  DRAFT
+}
+
+enum AssessmentStatus {
+  PUBLISHED
+  DRAFT
 }
