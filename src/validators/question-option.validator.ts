@@ -46,3 +46,27 @@ export const validateCreateQuestionOptions = [
     next();
   },
 ];
+
+export const validateUpdateQuestionOption = [
+  body("option")
+    .optional()
+    .notEmpty()
+    .withMessage("Option is required")
+    .isString(),
+  body("isCorrect")
+    .optional()
+    .notEmpty()
+    .withMessage("isCorrect is required")
+    .isBoolean(),
+
+  (req: Request, res: Response, next: NextFunction) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      res.status(400).send({ message: errors.array()[0].msg });
+      return;
+    }
+
+    next();
+  },
+];

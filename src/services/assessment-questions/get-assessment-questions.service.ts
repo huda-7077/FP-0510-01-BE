@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
-import { PaginationQueryParams } from "../../types/pagination";
 
 interface GetAssessmentQuestionQuery {
   assessmentId: number;
@@ -22,6 +21,9 @@ export const getAssessmentQuestionsService = async (
 
     const assessmentQuestion = await prisma.assessmentQuestion.findMany({
       where: whereClause,
+      include: {
+        assessmentOptions: true,
+      },
     });
 
     return { data: assessmentQuestion };

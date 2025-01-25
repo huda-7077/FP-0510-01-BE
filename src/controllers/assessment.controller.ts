@@ -3,6 +3,7 @@ import { createAssessmentService } from "../services/assessment/create-assessmen
 import { deleteAssessmentService } from "../services/assessment/delete-assessment.service";
 import { getAssessmentService } from "../services/assessment/get-assessment.service";
 import { getAssessmentsService } from "../services/assessment/get-assessments.service";
+import { updateAssessmentService } from "../services/assessment/update-assessment.service";
 
 export const getAssessmentsController = async (
   req: Request,
@@ -42,6 +43,20 @@ export const createAssessmentController = async (
 ) => {
   try {
     const result = await createAssessmentService(req.body);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateAssessmentController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const result = await updateAssessmentService(req.body, parseInt(id));
     res.status(200).send(result);
   } catch (error) {
     next(error);
