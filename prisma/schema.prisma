@@ -82,6 +82,7 @@ model CompanyLocation {
   createdAt  DateTime @default(now())
   company    Company  @relation(fields: [companyId], references: [id])
   regency    Regency  @relation(fields: [regencyId], references: [id])
+  Job        Job[]
 
   @@map("company_locations")
 }
@@ -119,6 +120,8 @@ model Job {
   isPublished         Boolean
   requiresAssessment  Boolean
   isDeleted           Boolean
+  companyLocationId   Int
+  companyLocation     CompanyLocation  @relation(fields: [companyLocationId], references: [id])
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
   company             Company          @relation(fields: [companyId], references: [id])

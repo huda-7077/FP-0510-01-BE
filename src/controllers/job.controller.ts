@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { getJobsService } from "../services/job/get-jobs.service";
 import { getJobCategoriesService } from "../services/job/get-jobs-categories.service";
+import { getJobService } from "../services/job/get-job.service";
 
 export const getJobsController = async (
   req: Request,
@@ -21,6 +22,20 @@ export const getJobsController = async (
     };
 
     const result = await getJobsService(query);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getJobController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const result = await getJobService(parseInt(id));
     res.status(200).send(result);
   } catch (error) {
     next(error);
