@@ -2,6 +2,7 @@ import handlebars from "handlebars";
 import { transporter } from "./nodemailer";
 import { notificationTransactionTemplate } from "../templates/NotificationTransaction";
 import { forgotPasswordTemplate } from "../templates/ForgotPassword";
+import { emailVerificationTemplate } from "../templates/EmailVerification";
 
 export const sendTransactionEmail = async (data: {
   email: string;
@@ -74,5 +75,34 @@ export const sendForgotPasswordEmail = async (data: {
     // console.log(`Forgot password email sent to ${email} successfully!`);
   } catch (error) {
     console.error("Error sending forgot password email:", error);
+  }
+};
+
+export const sendVerificationEmail = async (data: {
+  email: string;
+  name: string;
+  verificationLink: string;
+}) => {
+  const { email, name, verificationLink } = data;
+
+  const template = handlebars.compile(emailVerificationTemplate);
+
+  const html = template({
+    name,
+    verificationLink,
+  });
+
+  const mailOptions = {
+    from: `"JobSeeker" <${process.env.GMAIL_EMAIL}>`,
+    to: email,
+    subject: "Verify Your Email Address",
+    html,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error("Error sending verification email:", error);
+    throw error;
   }
 };
