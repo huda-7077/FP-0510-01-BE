@@ -15,7 +15,7 @@ export const sendVerificationToken = async (
     });
 
     const token = sign({ userId }, JWT_SECRET_VERIFY_EMAIL!, {
-      expiresIn: "2h",
+      expiresIn: "1h",
     });
 
     await prisma.verificationToken.create({
