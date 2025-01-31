@@ -7,6 +7,7 @@ import assessmentRouter from "./routes/assessment.router";
 import assessmentQuestionRouter from "./routes/assessment-question.router";
 import questionOptionRouter from "./routes/question-option.router";
 import companyLocationRouter from "./routes/company-location.router";
+import authRouter from "./routes/auth.router";
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use("/job-applications", jobApplicationRouter);
 app.use("/assessments", assessmentRouter);
 app.use("/questions", assessmentQuestionRouter);
 app.use("/options", questionOptionRouter);
+app.use("/auth", authRouter);
 
 // middleware error
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
