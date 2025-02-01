@@ -14,3 +14,5 @@ export const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 export const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 export const XENDIT_SECRET_API_KEY = process.env.XENDIT_SECRET_API_KEY!;
 export const XENDIT_CALLBACK_TOKEN = process.env.XENDIT_CALLBACK_TOKEN!;
+export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+export const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;

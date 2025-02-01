@@ -17,47 +17,60 @@ model Sample {
 }
 
 model User {
-  id              Int              @id @default(autoincrement())
-  companyId       Int?
-  regencyId       Int?
-  email           String           @unique
-  password        String?
-  role            UserRole
-  fullName        String
-  dateOfBirth     DateTime
-  gender          UserGender
-  educationLevel  String
-  currentAddress  String
-  profilePicture  String?
-  phoneNumber     String?
-  cvUrl           String?
-  isVerified      Boolean
-  isDeleted       Boolean
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  company         Company?         @relation(fields: [companyId], references: [id])
-  regency         Regency?         @relation(fields: [regencyId], references: [id])
-  jobApplications JobApplication[]
-  userBadges      UserBadge[]
-  companyReviews  CompanyReview[]
-  savedJobs       SavedJob[]
-  employees       Employee[]
-  userCourses     UserCourse[]
-  certificates    Certificate[]
-  userAssessments UserAssessment[]
-  payments        Payment[]
+  id                 Int                 @id @default(autoincrement())
+  companyId          Int?
+  regencyId          Int?
+  email              String              @unique
+  password           String?
+  role               UserRole
+  fullName           String
+  dateOfBirth        DateTime?
+  gender             UserGender?
+  educationLevel     String?
+  currentAddress     String?
+  profilePicture     String?
+  phoneNumber        String?
+  cvUrl              String?
+  isVerified         Boolean
+  isDeleted          Boolean
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  company            Company?            @relation(fields: [companyId], references: [id])
+  regency            Regency?            @relation(fields: [regencyId], references: [id])
+  jobApplications    JobApplication[]
+  userBadges         UserBadge[]
+  companyReviews     CompanyReview[]
+  savedJobs          SavedJob[]
+  employees          Employee[]
+  userCourses        UserCourse[]
+  certificates       Certificate[]
+  userAssessments    UserAssessment[]
+  verificationTokens VerificationToken[]
+  payments           Payment[]
 
   @@map("users")
+}
+
+model VerificationToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique
+  isValid   Boolean  @default(true)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("verification_tokens")
 }
 
 model Company {
   id               Int               @id @default(autoincrement())
   name             String
-  description      String
-  industry         String
-  logo             String
-  links            String
-  employeeCount    Int
+  description      String?
+  industry         String?
+  logo             String?
+  links            String?
+  employeeCount    Int?
   establishedYear  Int
   isDeleted        Boolean
   createdAt        DateTime          @default(now())
