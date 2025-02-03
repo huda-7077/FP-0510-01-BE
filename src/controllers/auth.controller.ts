@@ -18,7 +18,6 @@ export const registerController = async (
   }
 };
 
-// controllers/auth.controller.ts
 export const loginController = async (
   req: Request,
   res: Response,
@@ -52,7 +51,7 @@ export const verifyEmailController = async (
   next: NextFunction
 ) => {
   try {
-    const userId = Number(res.locals.user.userId);
+    const userId = Number(res.locals.user.id);
     const result = await verifyEmailService(userId);
     res.status(200).send(result);
   } catch (error) {

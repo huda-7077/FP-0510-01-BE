@@ -1,8 +1,9 @@
 import { prisma } from "../../lib/prisma";
+import { ApiError } from "../../utils/apiError";
 
 export const getInvoiceService = async (uuid: string) => {
   try {
-    const invoice = await prisma.payment.findUnique({
+    const invoice = await prisma.payment.findFirst({
       where: { uuid },
       include: {
         category: {
@@ -12,7 +13,7 @@ export const getInvoiceService = async (uuid: string) => {
     });
 
     if (!invoice) {
-      throw new Error("Invoice not found");
+      throw new ApiError("Invoice not found", 404);
     }
 
     return invoice;

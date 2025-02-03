@@ -47,6 +47,7 @@ model User {
   userAssessments    UserAssessment[]
   verificationTokens VerificationToken[]
   payments           Payment[]
+  subscriptions      Subscription[]
 
   @@map("users")
 }
@@ -209,10 +210,12 @@ model CompanyReview {
 
 model Subscription {
   id          Int                @id @default(autoincrement())
+  userId      Int
   paymentId   Int
   expiredDate DateTime
   status      SubscriptionStatus
   createdAt   DateTime           @default(now())
+  user        User               @relation(fields: [userId], references: [id])
   payment     Payment            @relation(fields: [paymentId], references: [id])
 
   @@map("subscriptions")
@@ -222,13 +225,14 @@ model Payment {
   id                     Int                  @id @default(autoincrement())
   userId                 Int
   subscriptionCategoryId Int
-  uuid                   String               @unique
+  uuid                   String               @default(uuid())
   paymentMethod          PaymentMethod
   paymentProof           String?
   invoiceUrl             String?
   duration               Int
   total                  Int
   status                 PaymentStatus
+  isRenewal              Boolean              @default(false)
   createdAt              DateTime             @default(now())
   expiredAt              DateTime?
   paidAt                 DateTime?
@@ -281,6 +285,7 @@ model Course {
   title           String
   description     String
   passingScore    Int
+  // badge Url
   status          CourseStatus
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -415,6 +420,7 @@ enum SubscriptionStatus {
   ACTIVE
   EXPIRED
   RENEWED
+  MAILED
 }
 
 enum PaymentStatus {

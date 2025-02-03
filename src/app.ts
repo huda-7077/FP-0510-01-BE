@@ -1,6 +1,7 @@
 import cors from "cors";
-import express, { NextFunction, Request, Response } from "express";
+import express from "express";
 import "./lib/scheduler";
+import { errorMiddleware } from "./middleware/error.middleware";
 import assessmentQuestionRouter from "./routes/assessment-question.router";
 import assessmentRouter from "./routes/assessment.router";
 import authRouter from "./routes/auth.router";
@@ -21,6 +22,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (_, res) => {
+  res.send("Welcome to Supajob API");
+});
+
 //routes
 app.use("/samples", sampleRouter);
 app.use("/users", userRouter);
@@ -38,8 +43,6 @@ app.use("/xendit-webhook", xenditRouter);
 app.use("/auth", authRouter);
 
 // middleware error
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  res.status(400).send(err.message);
-});
+app.use(errorMiddleware);
 
 export default app;

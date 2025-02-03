@@ -1,40 +1,37 @@
 import { PaymentMethod, PaymentStatus } from "@prisma/client";
-import { generatePaymentUUID } from "../../lib/generator";
 import { prisma } from "../../lib/prisma";
 import xendit from "../../lib/xendit";
 import { ApiError } from "../../utils/apiError";
+import { BASE_URL_FE } from "../../config";
 
 const INVOICE_DURATION = 7200;
 const PAYMENT_GATEWAY_EXPIRY = 2 * 60 * 60 * 1000;
-const MANUAL_PAYMENT_EXPIRY = 5 * 60 * 1000;
-const UUID_PREFIX = {
-  [PaymentMethod.PAYMENT_GATEWAY]: "PGW-",
-  [PaymentMethod.PAYMENT_MANUAL]: "PMN-",
-};
+const MANUAL_PAYMENT_EXPIRY = 6 * 60 * 60 * 1000;
 
 interface CreatePaymentBody {
   duration: number;
   category: string;
   paymentMethod: PaymentMethod;
+  isRenewal?: boolean;
 }
 
 const createPaymentRecord = async (
   userId: number,
   subscriptionCategoryId: number,
-  uuid: string,
   paymentMethod: PaymentMethod,
   duration: number,
   amount: number,
   expiredAt: Date,
+  isRenewal?: boolean,
   invoiceUrl?: string
 ) => {
   return prisma.payment.create({
     data: {
       userId,
       subscriptionCategoryId,
-      uuid,
       paymentMethod,
       duration,
+      isRenewal,
       total: amount,
       status: PaymentStatus.PENDING,
       expiredAt,
@@ -44,7 +41,7 @@ const createPaymentRecord = async (
 };
 
 const createXenditInvoice = async (
-  uuid: string,
+  externalId: string,
   amount: number,
   payerEmail: string,
   category: string,
@@ -53,12 +50,13 @@ const createXenditInvoice = async (
 ) => {
   return xendit.Invoice.createInvoice({
     data: {
-      externalId: uuid,
+      externalId,
       amount,
       payerEmail,
       description: `Payment for ${duration}-month ${category.toLowerCase()} subscription on Supajob`,
       invoiceDuration: INVOICE_DURATION.toString(),
       items: [{ name: category, quantity: duration, price }],
+      successRedirectUrl: `${BASE_URL_FE}/subscriptions/payments/${externalId}`,
     },
   });
 };
@@ -80,36 +78,41 @@ export const createPaymentService = async (
   userId: number,
   body: CreatePaymentBody
 ) => {
-  const { duration, category, paymentMethod } = body;
+  const { duration, category, paymentMethod, isRenewal } = body;
 
   const { user, subscriptionCategory } = await validateUserAndCategory(
     userId,
     category
   );
-  const uuid = generatePaymentUUID(UUID_PREFIX[paymentMethod], 25);
+
   const amount = subscriptionCategory.price * duration;
 
   try {
     return await prisma.$transaction(async () => {
       if (paymentMethod === PaymentMethod.PAYMENT_GATEWAY) {
+        const payment = await createPaymentRecord(
+          userId,
+          subscriptionCategory.id,
+          paymentMethod,
+          duration,
+          amount,
+          new Date(Date.now() + PAYMENT_GATEWAY_EXPIRY),
+          isRenewal
+        );
         const invoice = await createXenditInvoice(
-          uuid,
+          payment.uuid,
           amount,
           user.email,
           subscriptionCategory.name,
           duration,
           subscriptionCategory.price
         );
-        const payment = await createPaymentRecord(
-          userId,
-          subscriptionCategory.id,
-          uuid,
-          paymentMethod,
-          duration,
-          amount,
-          new Date(Date.now() + PAYMENT_GATEWAY_EXPIRY),
-          invoice.invoiceUrl
-        );
+
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data: { invoiceUrl: invoice.invoiceUrl },
+        });
+
         return { payment, message: "Payment gateway created successfully" };
       }
 
@@ -117,11 +120,11 @@ export const createPaymentService = async (
         const payment = await createPaymentRecord(
           userId,
           subscriptionCategory.id,
-          uuid,
           paymentMethod,
           duration,
           amount,
-          new Date(Date.now() + MANUAL_PAYMENT_EXPIRY)
+          new Date(Date.now() + MANUAL_PAYMENT_EXPIRY),
+          isRenewal
         );
         return { payment, message: "Manual payment created successfully" };
       }

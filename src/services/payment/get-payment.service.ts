@@ -1,9 +1,9 @@
 import { prisma } from "../../lib/prisma";
 
-export const getPaymentService = async (uuid: string) => {
+export const getPaymentService = async (id: number, uuid: string) => {
   try {
-    const payment = await prisma.payment.findUnique({
-      where: { uuid },
+    const payment = await prisma.payment.findFirst({
+      where: { uuid, userId: id },
       include: {
         user: {
           select: { email: true },

@@ -1,6 +1,6 @@
 import { sign } from "jsonwebtoken";
 import { BASE_URL_FE, JWT_SECRET_VERIFY_EMAIL } from "../../config";
-import { sendVerificationEmail } from "../../lib/handlebars";
+import { sendVerificationEmail } from "../../lib/handlebars/sendVerificationEmail";
 import { prisma } from "../../lib/prisma";
 
 export const sendVerificationToken = async (
@@ -14,7 +14,7 @@ export const sendVerificationToken = async (
       data: { isValid: false },
     });
 
-    const token = sign({ userId }, JWT_SECRET_VERIFY_EMAIL!, {
+    const token = sign({ id: userId }, JWT_SECRET_VERIFY_EMAIL!, {
       expiresIn: "1h",
     });
 

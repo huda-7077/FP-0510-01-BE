@@ -1,4 +1,4 @@
-import { PaymentStatus } from "@prisma/client";
+import { PaymentStatus, SubscriptionStatus } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { cloudinaryUpload } from "../../lib/cloudinary";
 import { ApiError } from "../../utils/apiError";
@@ -16,7 +16,7 @@ export const updatePaymentService = async (
   const { uuid, action } = body;
 
   return await prisma.$transaction(async (prisma) => {
-    const payment = await prisma.payment.findUnique({
+    const payment = await prisma.payment.findFirst({
       where: { uuid, userId, status: PaymentStatus.PENDING },
     });
 
@@ -29,7 +29,7 @@ export const updatePaymentService = async (
     switch (action) {
       case "CANCEL":
         await prisma.payment.update({
-          where: { uuid },
+          where: { id: payment.id },
           data: {
             status: PaymentStatus.CANCELLED,
             expiredAt: null,
@@ -46,7 +46,7 @@ export const updatePaymentService = async (
         const { secure_url } = await cloudinaryUpload(paymentProof);
 
         await prisma.payment.update({
-          where: { uuid },
+          where: { id: payment.id },
           data: {
             status: PaymentStatus.WAITING_ADMIN,
             paymentProof: secure_url,
@@ -54,6 +54,27 @@ export const updatePaymentService = async (
             paidAt: new Date(Date.now()),
           },
         });
+
+        if (payment.isRenewal === true) {
+          const subscription = await prisma.subscription.findFirst({
+            where: {
+              userId,
+              status: SubscriptionStatus.MAILED,
+            },
+          });
+
+          if (!subscription) {
+            throw new ApiError("You don't have any active subscription", 404);
+          }
+
+          if (subscription) {
+            await prisma.subscription.update({
+              where: { id: subscription.id },
+              data: { status: SubscriptionStatus.RENEWED },
+            });
+          }
+        }
+
         status = PaymentStatus.WAITING_ADMIN;
         break;
 
