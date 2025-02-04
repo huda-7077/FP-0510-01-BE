@@ -38,7 +38,7 @@ export const googleLoginService = async (token: string) => {
       { id: user.id, isVerified: user.isVerified, role: user.role },
       JWT_SECRET!,
       {
-        expiresIn: "24h",
+        expiresIn: "2h",
       }
     );
 
