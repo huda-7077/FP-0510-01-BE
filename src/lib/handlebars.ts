@@ -44,37 +44,37 @@ export const sendTransactionEmail = async (data: {
 
   try {
     await transporter.sendMail(mailOptions);
-    // console.log(`Transaction email sent to ${email} successfully!`);
   } catch (error) {
     console.error("Error sending transaction email:", error);
   }
 };
 
-export const sendForgotPasswordEmail = async (data: {
+export const sendResetPasswordEmail = async (data: {
   email: string;
-  link: string;
+  name: string;
+  resetPasswordLink: string;
 }) => {
-  const { email, link } = data;
+  const { email, name, resetPasswordLink } = data;
 
   const template = handlebars.compile(forgotPasswordTemplate);
 
   const html = template({
     email,
-    link,
+    name,
+    resetPasswordLink,
   });
 
   const mailOptions = {
-    from: `"Star Ticket" <${process.env.GMAIL_EMAIL}>`,
+    from: `"SupaJob" <${process.env.GMAIL_EMAIL}>`,
     to: email,
-    subject: "Reset Your Password",
+    subject: "Password Reset Request",
     html,
   };
 
   try {
     await transporter.sendMail(mailOptions);
-    // console.log(`Forgot password email sent to ${email} successfully!`);
   } catch (error) {
-    console.error("Error sending forgot password email:", error);
+    throw error;
   }
 };
 
@@ -93,7 +93,7 @@ export const sendVerificationEmail = async (data: {
   });
 
   const mailOptions = {
-    from: `"JobSeeker" <${process.env.GMAIL_EMAIL}>`,
+    from: `"SupaJob" <${process.env.GMAIL_EMAIL}>`,
     to: email,
     subject: "Verify Your Email Address",
     html,

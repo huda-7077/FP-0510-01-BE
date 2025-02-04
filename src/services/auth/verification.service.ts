@@ -14,7 +14,7 @@ export const sendVerificationToken = async (
       data: { isValid: false },
     });
 
-    const token = sign({ userId }, JWT_SECRET_VERIFY_EMAIL!, {
+    const token = sign({ id: userId }, JWT_SECRET_VERIFY_EMAIL!, {
       expiresIn: "1h",
     });
 
@@ -43,6 +43,21 @@ export const sendVerificationToken = async (
 
 export const verifyEmailService = async (userId: number) => {
   try {
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (existingUser?.isVerified) {
+      return {
+        message: "Email already verified",
+        isVerified: true,
+        user: {
+          id: existingUser.id,
+          email: existingUser.email,
+        },
+      };
+    }
+
     const user = await prisma.user.update({
       where: { id: userId },
       data: { isVerified: true },
@@ -52,6 +67,7 @@ export const verifyEmailService = async (userId: number) => {
 
     return {
       message: "Email verified successfully",
+      isVerified: true,
       user: userWithoutPassword,
     };
   } catch (error) {

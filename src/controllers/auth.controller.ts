@@ -4,6 +4,8 @@ import { registerService } from "../services/auth/register.service";
 import { verifyEmailService } from "../services/auth/verification.service";
 import { resendVerificationToken } from "../services/auth/resend-verification.service";
 import { loginService } from "../services/auth/login.service";
+import { forgotPasswordService } from "../services/auth/forgot-password.service";
+import { resetPasswordService } from "../services/auth/reset-password.service";
 
 export const registerController = async (
   req: Request,
@@ -18,7 +20,6 @@ export const registerController = async (
   }
 };
 
-// controllers/auth.controller.ts
 export const loginController = async (
   req: Request,
   res: Response,
@@ -52,7 +53,7 @@ export const verifyEmailController = async (
   next: NextFunction
 ) => {
   try {
-    const userId = Number(res.locals.user.userId);
+    const userId = Number(res.locals.user.id);
     const result = await verifyEmailService(userId);
     res.status(200).send(result);
   } catch (error) {
@@ -68,7 +69,42 @@ export const resendVerificationController = async (
   try {
     const { email } = req.body;
     const result = await resendVerificationToken(email);
-    res.status(200).json(result);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const forgotPasswordController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { email } = req.body;
+    const result = await forgotPasswordService(email);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPasswordController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = Number(res.locals.user.id);
+    const { password } = req.body;
+
+    if (!password) {
+      res.status(400).send({ message: "New password is required" });
+      return;
+    }
+
+    const result = await resetPasswordService(userId, password);
+    res.status(200).send(result);
   } catch (error) {
     next(error);
   }
