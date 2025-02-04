@@ -34,6 +34,7 @@
     "axios": "^1.7.9",
     "cloudinary": "^2.5.1",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.6",
     "express": "^4.21.1",
     "express-validator": "^7.2.0",
@@ -45,6 +46,8 @@
     "nodemailer": "^6.9.16",
     "prisma": "^6.0.1",
     "punycode": "^2.3.1",
-    "streamifier": "^0.1.1"
+    "streamifier": "^0.1.1",
+    "uuid": "^11.0.5",
+    "xendit-node": "^6.0.0"
   }
 }

@@ -54,7 +54,8 @@ export const verifyEmailController = async (
 ) => {
   try {
     const userId = Number(res.locals.user.id);
-    const result = await verifyEmailService(userId);
+    const tokenId = Number(res.locals.tokenId);
+    const result = await verifyEmailService(userId, tokenId);
     res.status(200).send(result);
   } catch (error) {
     next(error);

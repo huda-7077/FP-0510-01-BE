@@ -1,7 +1,7 @@
-import { prisma } from "../../lib/prisma";
-import { comparePassword } from "../../lib/argon";
 import { sign } from "jsonwebtoken";
 import { JWT_SECRET } from "../../config";
+import { comparePassword } from "../../lib/argon";
+import { prisma } from "../../lib/prisma";
 
 export const loginService = async (email: string, password: string) => {
   try {

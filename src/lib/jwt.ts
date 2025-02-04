@@ -94,7 +94,6 @@ export const verifyTokenEmail = async (
   next: NextFunction
 ): Promise<void> => {
   const token = req.headers.authorization?.split(" ")[1];
-
   if (!token) {
     res.status(401).send({
       message: "authorization failed, token is missing",
@@ -104,13 +103,13 @@ export const verifyTokenEmail = async (
 
   try {
     const decoded = verify(token, JWT_SECRET_VERIFY_EMAIL!) as {
-      id: number;
+      userId: number;
     };
-
+    
     const validToken = await prisma.verificationToken.findFirst({
       where: {
         token,
-        userId: decoded.id,
+        userId: decoded.userId,
         isValid: true,
         expiresAt: {
           gt: new Date(),
@@ -126,12 +125,8 @@ export const verifyTokenEmail = async (
       return;
     }
 
-    await prisma.verificationToken.update({
-      where: { id: validToken.id },
-      data: { isValid: false },
-    });
-
     res.locals.user = decoded;
+    res.locals.tokenId = validToken.id;
     next();
   } catch (error) {
     if (error instanceof TokenExpiredError) {
@@ -143,3 +138,4 @@ export const verifyTokenEmail = async (
     }
   }
 };
+

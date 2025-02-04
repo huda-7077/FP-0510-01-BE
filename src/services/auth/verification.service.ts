@@ -1,6 +1,6 @@
 import { sign } from "jsonwebtoken";
 import { BASE_URL_FE, JWT_SECRET_VERIFY_EMAIL } from "../../config";
-import { sendVerificationEmail } from "../../lib/handlebars";
+import { sendVerificationEmail } from "../../lib/handlebars/sendVerificationEmail";
 import { prisma } from "../../lib/prisma";
 
 export const sendVerificationToken = async (
@@ -41,36 +41,28 @@ export const sendVerificationToken = async (
   }
 };
 
-export const verifyEmailService = async (userId: number) => {
+export const verifyEmailService = async (userId: number, tokenId: number) => {
   try {
-    const existingUser = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (existingUser?.isVerified) {
-      return {
-        message: "Email already verified",
-        isVerified: true,
-        user: {
-          id: existingUser.id,
-          email: existingUser.email,
-        },
-      };
-    }
-
     const user = await prisma.user.update({
       where: { id: userId },
       data: { isVerified: true },
     });
 
+    await prisma.verificationToken.update({
+      where: { id: tokenId },
+      data: { isValid: false },
+    });
+
     const { password: _, ...userWithoutPassword } = user;
 
     return {
+      isVerified: true, 
       message: "Email verified successfully",
-      isVerified: true,
       user: userWithoutPassword,
     };
   } catch (error) {
     throw error;
   }
 };
+
+
