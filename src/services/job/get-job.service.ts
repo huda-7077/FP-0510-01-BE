@@ -15,6 +15,19 @@ export const getJobService = async (id: number) => {
             },
           },
         },
+        company: {
+          select: {
+            name: true,
+            logo: true,
+            industry: true,
+          },
+        },
+        assessments: {
+          select: {
+            id: true,
+            passingScore: true,
+          },
+        },
       },
     });
 
