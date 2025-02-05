@@ -104,6 +104,51 @@ async function sendNotificationSubscription() {
   }
 }
 
+async function updateUserAssessmentStatus() {
+  try {
+    const now = new Date();
+    const oneDayAgo = new Date(now);
+    oneDayAgo.setDate(now.getDate() - 1);
+
+    const { count } = await prisma.userAssessment.updateMany({
+      where: {
+        createdAt: { lte: oneDayAgo },
+        status: { notIn: ["EXPIRED", "DONE"] },
+      },
+      data: {
+        status: "EXPIRED",
+      },
+    });
+
+    console.log(`Updated ${count} user assessment to EXPIRED`);
+  } catch (error) {
+    console.error("Error updating expired payments:", error);
+  }
+}
+
+async function scheduleJobsBasedOnCreatedAt() {
+  try {
+    const assessments = await prisma.userAssessment.findMany({
+      where: { status: { notIn: ["EXPIRED", "DONE"] } },
+    });
+
+    assessments.forEach((assessment) => {
+      const createdAt = new Date(assessment.createdAt);
+
+      const cronExpression = `${createdAt.getMinutes()} ${createdAt.getHours()} * * *`;
+
+      schedule.scheduleJob(cronExpression, async () => {
+        console.log(
+          `Running scheduled job to update expired user assessment for assessment ID: ${assessment.id}`
+        );
+        await updateUserAssessmentStatus();
+      });
+    });
+  } catch (error) {
+    console.error("Error scheduling jobs:", error);
+  }
+}
+
 // Schedule the job to run every minute for testing purposes
 // schedule.scheduleJob("* * * * *", async () => {
 //   await sendNotificationSubscription();
@@ -125,5 +170,7 @@ schedule.scheduleJob("0 0 * * *", async () => {
   console.log("Running scheduled job to update expired subscriptions...");
   await updateSubscriptions();
 });
+
+scheduleJobsBasedOnCreatedAt();
 
 console.log("Scheduled job initialized.");

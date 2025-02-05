@@ -57,7 +57,12 @@ export const updateUserAssessmentController = async (
 ) => {
   try {
     const { id } = req.params;
-    const result = await updateUserAssessmentService(parseInt(id), req.body);
+    const userId = Number(res.locals.user.id);
+    const result = await updateUserAssessmentService(
+      parseInt(id),
+      req.body,
+      userId
+    );
     res.status(200).send(result);
   } catch (error) {
     next(error);

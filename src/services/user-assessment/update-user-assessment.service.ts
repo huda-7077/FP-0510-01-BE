@@ -9,7 +9,8 @@ interface UpdateUserAssessmentBody {
 
 export const updateUserAssessmentService = async (
   id: number,
-  body: UpdateUserAssessmentBody
+  body: UpdateUserAssessmentBody,
+  userId: number
 ) => {
   const transaction = await prisma.$transaction(
     async (prisma) => {
@@ -38,6 +39,12 @@ export const updateUserAssessmentService = async (
         throw new Error("You do not have access to this assessment.");
       }
 
+      if (existingUserAssessment.userId !== userId) {
+        throw new Error(
+          "You do not have permission to update this assessment."
+        );
+      }
+
       if (existingUserAssessment.status === "DONE") {
         throw new Error(
           "Cannot redo an assessment. The assessment is already completed."
@@ -50,6 +57,14 @@ export const updateUserAssessmentService = async (
           throw new Error("The assessment link has expired.");
         } else {
           throw new Error("Cannot redo an assessment.");
+        }
+      }
+
+      if (body.score !== undefined) {
+        if (body.score < 0 || body.score > 100) {
+          throw new Error(
+            `Invalid score. The score must be between 0 and ${100}.`
+          );
         }
       }
 
