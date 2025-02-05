@@ -2,12 +2,13 @@ import { UserAssessment } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 
 export const createUserAssessmentService = async (
-  body: Omit<UserAssessment, "score">
+  userId: number,
+  body: Omit<UserAssessment, "userId" | "score">
 ) => {
-  const { id, assessmentId, userId } = body;
+  const { id, assessmentId } = body;
 
   const existingUserAssessment = await prisma.userAssessment.findFirst({
-    where: { id, assessmentId, userId }, // User ID nanti diganti pakai res.locals.user.id
+    where: { id, assessmentId, userId },
   });
 
   if (existingUserAssessment) {
@@ -16,6 +17,7 @@ export const createUserAssessmentService = async (
 
   return await prisma.userAssessment.create({
     data: {
+      userId,
       score: 0,
       ...body,
     },

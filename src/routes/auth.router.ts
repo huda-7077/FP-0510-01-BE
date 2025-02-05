@@ -1,9 +1,11 @@
 import { Router } from "express";
 import {
+  forgotPasswordController,
   googleLoginController,
   loginController,
   registerController,
   resendVerificationController,
+  resetPasswordController,
   verifyEmailController,
 } from "../controllers/auth.controller";
 import {
@@ -11,8 +13,10 @@ import {
   validateLogin,
   validateRegister,
   validateRequestVerification,
+  validateResetPassword,
+  validateSendResetPassword,
 } from "../validators/auth.validator";
-import { verifyTokenEmail } from "../lib/jwt";
+import { verifyTokenEmail, verifyTokenReset } from "../lib/jwt";
 
 const router = Router();
 
@@ -24,6 +28,17 @@ router.post(
   "/resend-verification",
   validateRequestVerification,
   resendVerificationController
+);
+router.post(
+  "/forgot-password",
+  validateSendResetPassword,
+  forgotPasswordController
+);
+router.patch(
+  "/reset-password",
+  verifyTokenReset,
+  validateResetPassword,
+  resetPasswordController
 );
 
 export default router;

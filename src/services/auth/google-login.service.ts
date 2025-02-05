@@ -32,11 +32,21 @@ export const googleLoginService = async (token: string) => {
       });
     }
 
-    const jwtToken = sign({ userId: user.id }, JWT_SECRET!, {
-      expiresIn: "24h",
-    });
+    const { password: _, ...userWithoutPassword } = user;
 
-    return { token: jwtToken, user };
+    const jwtToken = sign(
+      { id: user.id, isVerified: user.isVerified, role: user.role },
+      JWT_SECRET!,
+      {
+        expiresIn: "2h",
+      }
+    );
+
+    return {
+      message: "Login successful",
+      token: jwtToken,
+      ...userWithoutPassword,
+    };
   } catch (error) {
     throw error;
   }

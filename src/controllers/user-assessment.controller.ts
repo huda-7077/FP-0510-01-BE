@@ -42,7 +42,8 @@ export const createUserAssessmentController = async (
   next: NextFunction
 ) => {
   try {
-    const result = await createUserAssessmentService(req.body);
+    const userId = Number(res.locals.user.id);
+    const result = await createUserAssessmentService(userId, req.body);
     res.status(200).send(result);
   } catch (error) {
     next(error);

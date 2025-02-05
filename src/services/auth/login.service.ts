@@ -1,7 +1,7 @@
-import { prisma } from "../../lib/prisma";
-import { comparePassword } from "../../lib/argon";
 import { sign } from "jsonwebtoken";
 import { JWT_SECRET } from "../../config";
+import { comparePassword } from "../../lib/argon";
+import { prisma } from "../../lib/prisma";
 
 export const loginService = async (email: string, password: string) => {
   try {
@@ -25,11 +25,12 @@ export const loginService = async (email: string, password: string) => {
     const { password: _, ...userWithoutPassword } = user;
 
     const token = sign(
-      { 
-        userId: user.id,
-        isVerified: user.isVerified 
-      }, 
-      JWT_SECRET!, 
+      {
+        id: user.id,
+        isVerified: user.isVerified,
+        role: user.role,
+      },
+      JWT_SECRET!,
       { expiresIn: "2h" }
     );
 
@@ -37,7 +38,9 @@ export const loginService = async (email: string, password: string) => {
       message: "Login successful",
       token,
       ...userWithoutPassword,
-      verificationMessage: !user.isVerified ? "Please verify your email to access all features" : null
+      verificationMessage: !user.isVerified
+        ? "Please verify your email to access all features"
+        : null,
     };
   } catch (error) {
     throw error;

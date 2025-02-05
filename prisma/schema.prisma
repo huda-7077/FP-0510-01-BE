@@ -17,10 +17,10 @@ model Sample {
 }
 
 model User {
-  id                 Int                 @id @default(autoincrement())
+  id                 Int                  @id @default(autoincrement())
   companyId          Int?
   regencyId          Int?
-  email              String              @unique
+  email              String               @unique
   password           String?
   role               UserRole
   fullName           String
@@ -33,20 +33,22 @@ model User {
   cvUrl              String?
   isVerified         Boolean
   isDeleted          Boolean
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  company            Company?            @relation(fields: [companyId], references: [id])
-  regency            Regency?            @relation(fields: [regencyId], references: [id])
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  company            Company?             @relation(fields: [companyId], references: [id])
+  regency            Regency?             @relation(fields: [regencyId], references: [id])
   jobApplications    JobApplication[]
   userBadges         UserBadge[]
   companyReviews     CompanyReview[]
-  userSubscriptions  UserSubscription[]
   savedJobs          SavedJob[]
   employees          Employee[]
   userCourses        UserCourse[]
   certificates       Certificate[]
   userAssessments    UserAssessment[]
   verificationTokens VerificationToken[]
+  resetPasswordToken ResetPasswordToken[]
+  payments           Payment[]
+  subscriptions      Subscription[]
 
   @@map("users")
 }
@@ -58,9 +60,23 @@ model VerificationToken {
   isValid   Boolean  @default(true)
   expiresAt DateTime
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
 
   @@map("verification_tokens")
+}
+
+model ResetPasswordToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique
+  isValid   Boolean  @default(true)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("reset_password_tokens")
 }
 
 model Company {
@@ -208,42 +224,52 @@ model CompanyReview {
 }
 
 model Subscription {
-  id                Int                @id @default(autoincrement())
-  name              String
-  price             Int
-  duration          Int
-  features          String
-  createdAt         DateTime           @default(now())
-  userSubscriptions UserSubscription[]
+  id          Int                @id @default(autoincrement())
+  userId      Int
+  paymentId   Int
+  expiredDate DateTime
+  status      SubscriptionStatus
+  createdAt   DateTime           @default(now())
+  user        User               @relation(fields: [userId], references: [id])
+  payment     Payment            @relation(fields: [paymentId], references: [id])
 
   @@map("subscriptions")
 }
 
-model UserSubscription {
-  id                 Int                @id @default(autoincrement())
-  userId             Int
-  paymentId          Int
-  subscriptionPlanId Int
-  expiredDate        DateTime
-  status             SubscriptionStatus
-  createdAt          DateTime           @default(now())
-  user               User               @relation(fields: [userId], references: [id])
-  payment            Payment            @relation(fields: [paymentId], references: [id])
-  subscription       Subscription       @relation(fields: [subscriptionPlanId], references: [id])
-
-  @@map("user_subscriptions")
-}
-
 model Payment {
-  id                Int                @id @default(autoincrement())
-  paymentMethod     String
-  paymentProof      String?
-  invoiceUrl        String?
-  status            PaymentStatus
-  createdAt         DateTime           @default(now())
-  userSubscriptions UserSubscription[]
+  id                     Int                  @id @default(autoincrement())
+  userId                 Int
+  subscriptionCategoryId Int
+  uuid                   String               @default(uuid())
+  paymentMethod          PaymentMethod
+  paymentProof           String?
+  invoiceUrl             String?
+  duration               Int
+  total                  Int
+  status                 PaymentStatus
+  isRenewal              Boolean              @default(false)
+  createdAt              DateTime             @default(now())
+  expiredAt              DateTime?
+  paidAt                 DateTime?
+  updatedAt              DateTime             @updatedAt
+  category               SubscriptionCategory @relation(fields: [subscriptionCategoryId], references: [id])
+  user                   User                 @relation(fields: [userId], references: [id])
+  subscriptions          Subscription[]
 
   @@map("payments")
+}
+
+model SubscriptionCategory {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String
+  price       Int
+  features    String[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  payments    Payment[]
+
+  @@map("subscription_categories")
 }
 
 model SavedJob {
@@ -274,6 +300,7 @@ model Course {
   title           String
   description     String
   passingScore    Int
+  // badge Url
   status          CourseStatus
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -397,18 +424,29 @@ enum ApplicationStatus {
   INTERVIEW_SCHEDULED
   ACCEPTED
   REJECTED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  PAYMENT_MANUAL
+  PAYMENT_GATEWAY
 }
 
 enum SubscriptionStatus {
+  INACTIVE
   ACTIVE
   EXPIRED
-  CANCELLED
+  RENEWED
+  MAILED
 }
 
 enum PaymentStatus {
   PENDING
-  APPROVED
+  WAITING_ADMIN
+  PAID
+  EXPIRED
   REJECTED
+  CANCELLED
 }
 
 enum CourseStatus {

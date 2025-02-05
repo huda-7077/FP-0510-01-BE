@@ -100,7 +100,7 @@ export const updateUserAssessmentService = async (
       return updateUserAssessment;
     },
     {
-      timeout: 10000,
+      timeout: 7000,
     }
   );
 
