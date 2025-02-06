@@ -110,17 +110,40 @@ async function updateUserAssessmentStatus() {
     const oneDayAgo = new Date(now);
     oneDayAgo.setDate(now.getDate() - 1);
 
-    const { count } = await prisma.userAssessment.updateMany({
-      where: {
-        createdAt: { lte: oneDayAgo },
-        status: { notIn: ["EXPIRED", "DONE"] },
-      },
-      data: {
-        status: "EXPIRED",
-      },
+    const result = await prisma.$transaction(async (prisma) => {
+      const updateUserAssessment = await prisma.userAssessment.updateMany({
+        where: {
+          createdAt: { lte: oneDayAgo },
+          status: { notIn: ["EXPIRED", "DONE"] },
+        },
+        data: {
+          status: "EXPIRED",
+        },
+      });
+
+      const updateJobApplications = await prisma.jobApplication.updateMany({
+        where: {
+          status: {
+            equals: "IN_REVIEW",
+          },
+        },
+        data: {
+          status: "REJECTED",
+        },
+      });
+
+      return {
+        userAssessmentCount: updateUserAssessment.count,
+        jobApplicationCount: updateJobApplications.count,
+      };
     });
 
-    console.log(`Updated ${count} user assessment to EXPIRED`);
+    console.log(
+      `Updated ${result.userAssessmentCount} user assessments to EXPIRED`
+    );
+    console.log(
+      `Updated ${result.jobApplicationCount} job applications to REJECTED`
+    );
   } catch (error) {
     console.error("Error updating expired payments:", error);
   }
