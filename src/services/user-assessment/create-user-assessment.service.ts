@@ -7,19 +7,24 @@ export const createUserAssessmentService = async (
 ) => {
   const { id, assessmentId } = body;
 
-  const existingUserAssessment = await prisma.userAssessment.findFirst({
-    where: { id, assessmentId, userId },
-  });
+  try {
+    const existingUserAssessment = await prisma.userAssessment.findFirst({
+      where: { id, assessmentId, userId },
+    });
 
-  if (existingUserAssessment) {
-    throw new Error("User assessment already exists.");
+    if (existingUserAssessment) {
+      throw new Error("User assessment already exists.");
+    }
+
+    return await prisma.userAssessment.create({
+      data: {
+        userId,
+        score: 0,
+        ...body,
+      },
+    });
+  } catch (error) {
+    console.error(`Error in createUserAssessment:`, error);
+    throw error;
   }
-
-  return await prisma.userAssessment.create({
-    data: {
-      userId,
-      score: 0,
-      ...body,
-    },
-  });
 };

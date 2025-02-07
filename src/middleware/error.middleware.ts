@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { ApiError } from "../utils/apiError";
 
 export function errorMiddleware(
-  err: unknown,
+  err: Error,
   req: Request,
   res: Response,
   next: NextFunction
@@ -13,7 +13,7 @@ export function errorMiddleware(
 
     res.status(status).json({ message });
   } else {
-    res.status(500).json({ message: "Something went wrong" });
+    res.status(400).json({ message: err.message });
   }
 
   next();

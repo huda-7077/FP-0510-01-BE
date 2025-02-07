@@ -34,6 +34,7 @@ export const getAssessmentsService = async (query: GetAssessmentQuery) => {
           select: {
             userId: true,
             score: true,
+            status: true,
           },
         },
       },

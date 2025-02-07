@@ -28,6 +28,7 @@ export const updateAssessmentService = async (
       },
     });
   } catch (error) {
+    console.error(`Error in updateAssessment for id ${id}:`, error);
     throw error;
   }
 };
