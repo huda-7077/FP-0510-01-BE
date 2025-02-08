@@ -1,9 +1,16 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 
-export const getJobService = async (id: number) => {
+export const getJobService = async (id: number, companyId?: number) => {
   try {
+    const whereClause: Prisma.JobWhereUniqueInput = { id };
+
+    if (companyId) {
+      whereClause.companyId = companyId;
+    }
+
     const job = await prisma.job.findUnique({
-      where: { id },
+      where: whereClause,
       include: {
         companyLocation: {
           select: {
@@ -13,6 +20,19 @@ export const getJobService = async (id: number) => {
                 regency: true,
               },
             },
+          },
+        },
+        company: {
+          select: {
+            name: true,
+            logo: true,
+            industry: true,
+          },
+        },
+        assessments: {
+          select: {
+            id: true,
+            passingScore: true,
           },
         },
       },
