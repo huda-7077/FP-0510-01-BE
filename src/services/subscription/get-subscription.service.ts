@@ -1,5 +1,4 @@
 import { prisma } from "../../lib/prisma";
-import { ApiError } from "../../utils/apiError";
 
 export const getSubscriptionService = async (userId: number) => {
   try {
@@ -17,7 +16,10 @@ export const getSubscriptionService = async (userId: number) => {
     });
 
     if (!subscription) {
-      throw new ApiError("You don't have any subscription", 404);
+      return {
+        status: "INACTIVE",
+        message: "You don't have any active subscription",
+      };
     }
 
     const { payment } = subscription;
