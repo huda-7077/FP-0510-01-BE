@@ -20,27 +20,27 @@ router.get("/", getQuestionOptionsController);
 router.post(
   "/bulk",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   validateCreateQuestionOptions,
   createQuestionOptionsController
 );
 router.patch(
   "/filter/questionId/:id",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   //! add validator,
   updateQuestionOptionByQuestionIdController
 );
 router.delete(
   "/:id",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   deleteQuestionOptionController
 );
 router.delete(
   "/filter/questionId/:id",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   deleteQuestionOptionsByQuestionIdController
 );
 

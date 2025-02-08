@@ -17,7 +17,7 @@ router.get("/total", getJobApplicationTotalController);
 router.patch(
   "/:id",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   validateUpdateJobApplication,
   updateJobApplicationController
 );

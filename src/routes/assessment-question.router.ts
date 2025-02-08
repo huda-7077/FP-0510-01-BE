@@ -21,7 +21,7 @@ router.get("/", getAssessmentQuestionsController);
 router.post(
   "/",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   validateCreateAssessmentQuestion,
   createAssessmentQuestionController
 );
@@ -29,7 +29,7 @@ router.post(
 router.post(
   "/bulk",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   validateCreateAssessmentQuestions,
   createAssessmentQuestionsController
 );
@@ -37,7 +37,7 @@ router.post(
 router.patch(
   "/:id",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   validateUpdateAssessmentQuestion,
   updateAssessmentQuestionController
 );
@@ -45,7 +45,7 @@ router.patch(
 router.delete(
   "/:id",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   deleteAssessmentQuestionController
 );
 

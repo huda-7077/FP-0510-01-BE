@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createPaymentController,
   getPaymentController,
+  getPaymentsByUserController,
   getPaymentsController,
   updatePaymentController,
 } from "../controllers/payment.controller";
@@ -14,25 +15,31 @@ import { verifySubscription } from "../middleware/subscription.middleware";
 
 const router = Router();
 
-router.get("/invoice", verifyToken, verifyRole("USER"), getPaymentsController);
+router.get("/", getPaymentsController);
+router.get(
+  "/invoice",
+  verifyToken,
+  verifyRole(["USER"]),
+  getPaymentsByUserController
+);
 router.get(
   "/invoice/:uuid",
   verifyToken,
-  verifyRole("USER"),
+  verifyRole(["USER"]),
   getPaymentController
 );
 router.post(
-  "/create",
+  "/",
   verifyToken,
-  verifyRole("USER"),
+  verifyRole(["USER"]),
   verifySubscription,
   validateCreatePayment,
   createPaymentController
 );
 router.patch(
-  "/update",
+  "/",
   verifyToken,
-  verifyRole("USER"),
+  verifyRole(["USER"]),
   uploader(2).fields([{ name: "paymentProof", maxCount: 1 }]),
   imageFilter,
   updatePaymentController

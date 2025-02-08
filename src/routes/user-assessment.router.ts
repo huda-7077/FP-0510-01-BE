@@ -19,14 +19,14 @@ router.get("/:id", getUserAssessmentController);
 router.post(
   "/",
   verifyToken,
-  verifyRole("USER"),
+  verifyRole(["USER"]),
   validateCreateUserAssessment,
   createUserAssessmentController
 );
 router.patch(
   "/:id",
   verifyToken,
-  verifyRole("USER"),
+  verifyRole(["USER"]),
   validateUpdateUserAssessment,
   updateUserAssessmentController
 );

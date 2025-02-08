@@ -20,21 +20,21 @@ router.get("/:id", getAssessmentController);
 router.post(
   "/",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   validateCreateAssessment,
   createAssessmentController
 );
 router.patch(
   "/:id",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   validateUpdateAssessment,
   updateAssessmentController
 );
 router.delete(
   "/:id",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   deleteAssessmentController
 );
 

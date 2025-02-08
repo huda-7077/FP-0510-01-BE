@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma";
+import { ApiError } from "../../utils/apiError";
 
 interface CreateSubscriptionCategoryBody {
   name: string;
@@ -18,7 +19,10 @@ export const createSubscriptionCategoryServices = async (
     });
 
   if (existingSubscriptionCategory) {
-    throw new Error(`Subscription category with name ${name} already exists`);
+    throw new ApiError(
+      `Subscription category with name ${name} already exists`,
+      409
+    );
   }
 
   const subscriptionCategory = await prisma.subscriptionCategory.create({
