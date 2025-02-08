@@ -1,9 +1,12 @@
-export const applicationRejectionTemplate = `
+export const assessmentReminderTemplate = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet" />
     <style>
       /* Modern CSS Reset */
       * {
@@ -17,7 +20,6 @@ export const applicationRejectionTemplate = `
         font-family: "Segoe UI", Arial, sans-serif;
         background-color: #f8fafc;
         margin: 0;
-        padding: 20px;
         line-height: 1.6;
         color: #334155;
       }
@@ -36,7 +38,7 @@ export const applicationRejectionTemplate = `
 
       /* Header Section */
       .email-header {
-        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        background: linear-gradient(135deg, #194bb6 0%, #2562ea 100%);
         padding: 40px 20px;
         text-align: center;
         color: #ffffff;
@@ -61,14 +63,13 @@ export const applicationRejectionTemplate = `
         padding: 0;
         line-height: 1.4;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        color: #ffffff;
+        color: #ffffff
       }
 
       /* Body Section */
       .email-body {
         padding: 40px;
         font-size: 16px;
-        text-align: center;
       }
 
       .email-body p {
@@ -77,9 +78,14 @@ export const applicationRejectionTemplate = `
       }
 
       /* Button Styles */
+      .button-container {
+        text-align: center;
+        margin: 32px 0;
+      }
+
       .button {
         display: inline-block;
-        background: #dc2626;
+        background: #2562ea;
         color: #ffffff;
         padding: 16px 32px;
         text-decoration: none;
@@ -87,14 +93,13 @@ export const applicationRejectionTemplate = `
         font-weight: 600;
         font-size: 16px;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.2);
-        margin-top: 24px;
+        box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.2);
       }
 
       .button:hover {
-        background: #b91c1c;
+        background: #1f53c5;
         transform: translateY(-1px);
-        box-shadow: 0 6px 8px -1px rgba(30, 41, 59, 0.3);
+        box-shadow: 0 6px 8px -1px rgba(79, 70, 229, 0.3);
       }
 
       /* Divider */
@@ -117,8 +122,21 @@ export const applicationRejectionTemplate = `
         margin-bottom: 16px;
       }
 
-      strong {
-        color: #dc2626;
+      .social-links {
+        margin-top: 24px;
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+      }
+
+      .social-link {
+        color: #64748b;
+        text-decoration: none;
+        transition: color 0.3s ease;
+      }
+
+      .social-link:hover {
+        color: #2562ea;
       }
 
       /* Responsive Design */
@@ -157,29 +175,38 @@ export const applicationRejectionTemplate = `
           src="{{company_logo}}"
           alt="{{company_name}} Logo"
           class="company-logo" />
-        <h1>Application Status: {{position}}</h1>
+        <h1>Assessment Test Reminder:<br />{{position}}</h1>
       </div>
       <div class="email-body">
         <p>Dear {{applicant_name}},</p>
         <p>
-          Thank you for applying for the position of
-          <strong>{{position}}</strong> at <strong>{{company_name}}</strong>.
-          After careful consideration, we regret to inform you that we have
-          decided to move forward with another candidate for this role.
+          Congratulations on being shortlisted for the position of
+          <strong>{{position}}</strong> at <strong>{{company_name}}</strong>! As
+          part of our application process, we require candidates to complete an
+          online assessment test.
+        </p>
+        <p>Please click the button below to access the assessment test:</p>
+        <div class="button-container">
+          <a href="{{assessment_url}}" target="_blank" class="button">
+            Start Assessment Test
+          </a>
+        </div>
+        <p>
+          The assessment test will evaluate your skills and knowledge relevant
+          to the {{position}} role. It should take approximately 60 minutes to
+          complete.
         </p>
         <p>
-          We appreciate the time and effort you put into your application, and
-          we encourage you to apply for future openings that match your
-          qualifications.
+          If you have any questions or concerns, please don't hesitate to reach
+          out to our recruitment team.
         </p>
-        <p>We wish you the best in your job search and future endeavors.</p>
-        <a href="{{company_website}}" class="button">
-          Visit Our Careers Page
-        </a>
       </div>
       <hr class="divider" />
       <div class="email-footer">
-        <p>Thank you again for your interest in {{company_name}}.</p>
+        <p>
+          Thank you for your interest in joining {{company_name}}. We look
+          forward to reviewing your assessment results.
+        </p>
         <p>
           Best regards,<br /><strong>{{company_name}} Recruitment Team</strong>
         </p>

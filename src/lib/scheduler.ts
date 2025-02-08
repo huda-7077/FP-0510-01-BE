@@ -172,6 +172,38 @@ async function scheduleJobsBasedOnCreatedAt() {
   }
 }
 
+async function updateJobApplicationStatus() {
+  try {
+    const now = new Date();
+    const threeDaysAgo = new Date(now);
+    threeDaysAgo.setDate(now.getDate() - 3);
+
+    const result = await prisma.$transaction(async (prisma) => {
+      const updateJobApplications = await prisma.jobApplication.updateMany({
+        where: {
+          updatedAt: { lte: threeDaysAgo },
+          status: {
+            in: ["IN_REVIEW", "PENDING", "INTERVIEW_SCHEDULED"],
+          },
+        },
+        data: {
+          status: "REJECTED",
+        },
+      });
+
+      return {
+        jobApplicationCount: updateJobApplications.count,
+      };
+    });
+
+    console.log(
+      `Updated ${result.jobApplicationCount} job applications to REJECTED`
+    );
+  } catch (error) {
+    console.error("Error updating expired payments:", error);
+  }
+}
+
 // Schedule the job to run every minute for testing purposes
 // schedule.scheduleJob("* * * * *", async () => {
 //   await sendNotificationSubscription();
@@ -192,6 +224,10 @@ schedule.scheduleJob("0 0 * * *", async () => {
 schedule.scheduleJob("0 0 * * *", async () => {
   console.log("Running scheduled job to update expired subscriptions...");
   await updateSubscriptions();
+});
+
+schedule.scheduleJob("0 0 * * *", async () => {
+  await updateJobApplicationStatus();
 });
 
 scheduleJobsBasedOnCreatedAt();

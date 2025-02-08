@@ -1,4 +1,4 @@
-export const applicationRejectionTemplate = `
+export const applicationAcceptanceTemplate = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -36,7 +36,7 @@ export const applicationRejectionTemplate = `
 
       /* Header Section */
       .email-header {
-        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
         padding: 40px 20px;
         text-align: center;
         color: #ffffff;
@@ -79,7 +79,7 @@ export const applicationRejectionTemplate = `
       /* Button Styles */
       .button {
         display: inline-block;
-        background: #dc2626;
+        background: #059669;
         color: #ffffff;
         padding: 16px 32px;
         text-decoration: none;
@@ -87,14 +87,14 @@ export const applicationRejectionTemplate = `
         font-weight: 600;
         font-size: 16px;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.2);
+        box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.2);
         margin-top: 24px;
       }
 
       .button:hover {
-        background: #b91c1c;
+        background: #047857;
         transform: translateY(-1px);
-        box-shadow: 0 6px 8px -1px rgba(30, 41, 59, 0.3);
+        box-shadow: 0 6px 8px -1px rgba(5, 150, 105, 0.3);
       }
 
       /* Divider */
@@ -118,7 +118,7 @@ export const applicationRejectionTemplate = `
       }
 
       strong {
-        color: #dc2626;
+        color: #059669;
       }
 
       /* Responsive Design */
@@ -157,29 +157,28 @@ export const applicationRejectionTemplate = `
           src="{{company_logo}}"
           alt="{{company_name}} Logo"
           class="company-logo" />
-        <h1>Application Status: {{position}}</h1>
+        <h1>Congratulations, {{applicant_name}}!</h1>
       </div>
       <div class="email-body">
         <p>Dear {{applicant_name}},</p>
         <p>
-          Thank you for applying for the position of
-          <strong>{{position}}</strong> at <strong>{{company_name}}</strong>.
-          After careful consideration, we regret to inform you that we have
-          decided to move forward with another candidate for this role.
+          We are pleased to inform you that your application for the position of
+          <strong>{{position}}</strong> at <strong>{{company_name}}</strong> has
+          been accepted!
         </p>
         <p>
-          We appreciate the time and effort you put into your application, and
-          we encourage you to apply for future openings that match your
-          qualifications.
+          We were truly impressed with your qualifications and believe you will
+          be a great addition to our team.
         </p>
-        <p>We wish you the best in your job search and future endeavors.</p>
-        <a href="{{company_website}}" class="button">
-          Visit Our Careers Page
-        </a>
+        <p>
+          Our HR team will be reaching out to you shortly with the next steps in
+          the onboarding process.
+        </p>
+        <a href="{{company_website}}" class="button"> View Next Steps </a>
       </div>
       <hr class="divider" />
       <div class="email-footer">
-        <p>Thank you again for your interest in {{company_name}}.</p>
+        <p>We are excited to welcome you to {{company_name}}!</p>
         <p>
           Best regards,<br /><strong>{{company_name}} Recruitment Team</strong>
         </p>

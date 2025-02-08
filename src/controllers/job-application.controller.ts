@@ -1,6 +1,21 @@
 import { NextFunction, Request, Response } from "express";
 import { getJobApplicationsTotalService } from "../services/job-application/get-job-applications-total.service";
 import { getJobApplicationsService } from "../services/job-application/get-job-applications.service";
+import { updateJobApplicationService } from "../services/job-application/update-job-application.service";
+
+export const updateJobApplicationController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const result = await updateJobApplicationService(req.body, parseInt(id));
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const getJobApplicationsController = async (
   req: Request,

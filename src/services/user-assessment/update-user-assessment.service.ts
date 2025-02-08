@@ -12,8 +12,8 @@ export const updateUserAssessmentService = async (
   body: UpdateUserAssessmentBody,
   userId: number
 ) => {
-  const transaction = await prisma.$transaction(
-    async (prisma) => {
+  try {
+    const result = await prisma.$transaction(async (prisma) => {
       const existingUserAssessment = await prisma.userAssessment.findFirst({
         where: { id },
         include: {
@@ -101,8 +101,20 @@ export const updateUserAssessmentService = async (
               "Assessment score is less than passing score. Good luck next time!",
           },
         });
+      }
 
-        await sendApplicationRejectionEmail({
+      return { updateUserAssessment, existingUserAssessment };
+    });
+
+    const { updateUserAssessment, existingUserAssessment } = result;
+
+    if (
+      body.score &&
+      updateUserAssessment.score <
+        existingUserAssessment.assessment.passingScore
+    ) {
+      try {
+        sendApplicationRejectionEmail({
           email: existingUserAssessment.user.email,
           position: existingUserAssessment.assessment.job.title,
           company_name: existingUserAssessment.assessment.job.company.name,
@@ -110,14 +122,14 @@ export const updateUserAssessmentService = async (
           company_logo:
             existingUserAssessment.assessment.job.company.logo || undefined,
         });
+      } catch (error) {
+        console.error("Failed to send application rejection email:", error);
       }
-
-      return updateUserAssessment;
-    },
-    {
-      timeout: 7000,
     }
-  );
 
-  return transaction;
+    return result;
+  } catch (error) {
+    console.error(`Error in updateUserAssessment for id ${id}:`, error);
+    throw error;
+  }
 };
