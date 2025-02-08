@@ -114,7 +114,7 @@ export const updateUserAssessmentService = async (
         existingUserAssessment.assessment.passingScore
     ) {
       try {
-        await sendApplicationRejectionEmail({
+        sendApplicationRejectionEmail({
           email: existingUserAssessment.user.email,
           position: existingUserAssessment.assessment.job.title,
           company_name: existingUserAssessment.assessment.job.company.name,

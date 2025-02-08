@@ -95,7 +95,7 @@ export const updateJobApplicationService = async (
       updatedJobApplication.job.requiresAssessment
     ) {
       try {
-        await sendAssessmentReminderEmail({
+        sendAssessmentReminderEmail({
           email: updatedJobApplication.user.email,
           position: updatedJobApplication.job.title,
           company_name: updatedJobApplication.job.company.name,
@@ -110,7 +110,7 @@ export const updateJobApplicationService = async (
 
     if (body.status === "ACCEPTED") {
       try {
-        await sendApplicationAcceptanceEmail({
+        sendApplicationAcceptanceEmail({
           email: updatedJobApplication.user.email,
           position: updatedJobApplication.job.title,
           company_name: updatedJobApplication.job.company.name,
@@ -122,7 +122,7 @@ export const updateJobApplicationService = async (
       }
     } else if (body.status === "REJECTED") {
       try {
-        await sendApplicationRejectionEmail({
+        sendApplicationRejectionEmail({
           email: updatedJobApplication.user.email,
           position: updatedJobApplication.job.title,
           company_name: updatedJobApplication.job.company.name,

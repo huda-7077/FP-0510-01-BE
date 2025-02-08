@@ -35,7 +35,8 @@ export const getJobController = async (
 ) => {
   try {
     const { id } = req.params;
-    const result = await getJobService(parseInt(id));
+    const companyId = parseInt(req.query.companyId as string);
+    const result = await getJobService(parseInt(id), companyId);
     res.status(200).send(result);
   } catch (error) {
     next(error);
