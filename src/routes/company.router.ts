@@ -14,7 +14,7 @@ const router = Router();
 router.get(
   "/profile",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   getCompanyProfileController
 );
 router.patch(
@@ -23,7 +23,7 @@ router.patch(
   uploader(1).fields([{ name: "logo", maxCount: 1 }]),
   fileFilter,
   validateUpdateCompanyProfile,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   updateCompanyProfileController
 );
 

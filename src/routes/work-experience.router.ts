@@ -13,21 +13,21 @@ const router = Router();
 router.post(
   "/",
   verifyToken,
-  verifyRole("USER"),
+  verifyRole(["USER"]),
   validateCreateWorkExperience,
   createWorkExperienceController
 );
-router.get("/", verifyToken, verifyRole("USER"), getWorkExperiencesController);
+router.get("/", verifyToken, verifyRole(["USER"]), getWorkExperiencesController);
 router.delete(
   "/:id",
   verifyToken,
-  verifyRole("USER"),
+  verifyRole(["USER"]),
   deleteWorkExperienceController
 );
 router.delete(
   "/bulk",
   verifyToken,
-  verifyRole("USER"),
+  verifyRole(["USER"]),
   deleteWorkExperienceController
 );
 export default router;

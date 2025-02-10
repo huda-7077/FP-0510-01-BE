@@ -14,7 +14,7 @@ const router = Router();
 router.get(
   "/",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   getCompanyLocationsController
 );
 router.get("/:id", getCompanyLocationController);
@@ -22,13 +22,13 @@ router.post(
   "/",
   verifyToken,
   validateCreateCompanyLocation,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   createCompanyLocationController
 );
 router.delete(
   "/:id",
   verifyToken,
-  verifyRole("ADMIN"),
+  verifyRole(["ADMIN"]),
   deleteCompanyLocationController
 );
 
