@@ -189,6 +189,7 @@ model JobApplication {
   status         ApplicationStatus
   notes          String?
   createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
   job            Job               @relation(fields: [jobId], references: [id])
   user           User              @relation(fields: [userId], references: [id])
   interviews     Interview[]
@@ -374,20 +375,22 @@ model Certificate {
 }
 
 model UserAssessment {
-  id           Int        @id @default(autoincrement())
+  id           Int                  @id @default(autoincrement())
   assessmentId Int
   userId       Int
   score        Int
-  createdAt    DateTime   @default(now())
-  assessment   Assessment @relation(fields: [assessmentId], references: [id])
-  user         User       @relation(fields: [userId], references: [id])
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  status       UserAssessmentStatus @default(PENDING)
+  assessment   Assessment           @relation(fields: [assessmentId], references: [id])
+  user         User                 @relation(fields: [userId], references: [id])
 
   @@map("user_assessments")
 }
 
 model Assessment {
   id                  Int                  @id @default(autoincrement())
-  jobId               Int
+  jobId               Int                  @unique
   title               String
   description         String
   passingScore        Int
@@ -473,4 +476,12 @@ enum CourseStatus {
 enum AssessmentStatus {
   PUBLISHED
   DRAFT
+}
+
+enum UserAssessmentStatus {
+  PENDING
+  STARTED
+  ON_DOING
+  DONE
+  EXPIRED
 }

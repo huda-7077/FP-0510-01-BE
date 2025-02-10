@@ -10,6 +10,8 @@ import {
   validateCreateQuestionOptions,
   validateUpdateQuestionOption,
 } from "../validators/question-option.validator";
+import { verifyToken } from "../lib/jwt";
+import { verifyRole } from "../middleware/role.middleware";
 
 const router = Router();
 
@@ -17,17 +19,28 @@ const router = Router();
 router.get("/", getQuestionOptionsController);
 router.post(
   "/bulk",
+  verifyToken,
+  verifyRole(["ADMIN"]),
   validateCreateQuestionOptions,
   createQuestionOptionsController
 );
 router.patch(
   "/filter/questionId/:id",
+  verifyToken,
+  verifyRole(["ADMIN"]),
   //! add validator,
   updateQuestionOptionByQuestionIdController
 );
-router.delete("/:id", deleteQuestionOptionController);
+router.delete(
+  "/:id",
+  verifyToken,
+  verifyRole(["ADMIN"]),
+  deleteQuestionOptionController
+);
 router.delete(
   "/filter/questionId/:id",
+  verifyToken,
+  verifyRole(["ADMIN"]),
   deleteQuestionOptionsByQuestionIdController
 );
 

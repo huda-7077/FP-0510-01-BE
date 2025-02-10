@@ -34,7 +34,8 @@ export const xenditUpdaterServices = async (body: XenditUpdaterBody) => {
           payment.id,
           payment.uuid,
           PaymentStatus.PAID,
-          null
+          null,
+          new Date(Date.now())
         );
         if (payment.isRenewal === true) {
           const existingSubscription = await prisma.subscription.findFirst({
@@ -116,11 +117,17 @@ const updatePaymentStatus = async (
   id: string,
   uuid: string,
   status: PaymentStatus,
-  expiredAt?: Date | null
+  expiredAt?: Date | null,
+  paidAt?: Date
 ) => {
   await prisma.payment.update({
     where: { id },
-    data: { status, expiredAt, invoiceUrl: `${BASE_URL_FE}/invoice/${uuid}` },
+    data: {
+      status,
+      expiredAt,
+      invoiceUrl: `${BASE_URL_FE}/invoice/${uuid}`,
+      paidAt,
+    },
   });
 };
 

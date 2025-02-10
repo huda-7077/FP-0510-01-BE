@@ -56,7 +56,7 @@ export const verifyEmailService = async (userId: number, tokenId: number) => {
     const { password: _, ...userWithoutPassword } = user;
 
     return {
-      isVerified: true, 
+      isVerified: true,
       message: "Email verified successfully",
       user: userWithoutPassword,
     };
@@ -64,5 +64,3 @@ export const verifyEmailService = async (userId: number, tokenId: number) => {
     throw error;
   }
 };
-
-

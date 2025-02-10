@@ -3,7 +3,9 @@ import { ApiError } from "../../utils/apiError";
 
 export const getSubscriptionCategoriesService = async () => {
   try {
-    const subscriptionCategory = await prisma.subscriptionCategory.findMany();
+    const subscriptionCategory = await prisma.subscriptionCategory.findMany({
+      orderBy: { id: "asc" },
+    });
 
     if (!subscriptionCategory) {
       throw new ApiError("Subscription category not found", 404);

@@ -124,6 +124,16 @@ export const getJobsService = async (query: GetJobsQuery) => {
             industry: true,
           },
         },
+        companyLocation: {
+          select: {
+            address: true,
+            regency: {
+              select: {
+                regency: true,
+              },
+            },
+          },
+        },
       },
     });
 
