@@ -28,6 +28,7 @@ export const verifyToken = (
       } else {
         res.status(401).send({ message: "Invalid token" });
       }
+      return;
     }
     res.locals.user = payload;
 
@@ -105,7 +106,7 @@ export const verifyTokenEmail = async (
     const decoded = verify(token, JWT_SECRET_VERIFY_EMAIL!) as {
       userId: number;
     };
-    
+
     const validToken = await prisma.verificationToken.findFirst({
       where: {
         token,
@@ -138,4 +139,3 @@ export const verifyTokenEmail = async (
     }
   }
 };
-

@@ -21,22 +21,25 @@ export const resendVerificationToken = async (email: string) => {
     });
 
     if (lastToken) {
-      const cooldownPeriod = 60 * 1000; 
-      const timeSinceLastToken = Date.now() - lastToken.createdAt.getTime();
+      const cooldownPeriod = 60 * 1000;
+      const nextAllowedTime = new Date(
+        lastToken.createdAt.getTime() + cooldownPeriod
+      );
+      const now = new Date();
 
-      if (timeSinceLastToken < cooldownPeriod) {
-        const remainingTime = Math.ceil(
-          (cooldownPeriod - timeSinceLastToken) / 1000
-        );
-        throw new Error(
-          `Please wait ${remainingTime} seconds before requesting a new verification email`
-        );
+      if (now < nextAllowedTime) {
+        throw {
+          message: `Please wait ${Math.ceil(
+            (nextAllowedTime.getTime() - now.getTime()) / 1000
+          )} seconds`,
+          nextAllowedTime: nextAllowedTime.toISOString(),
+        };
       }
     }
 
     await sendVerificationToken(user.id, user.email, user.fullName);
 
-    return { message: "Verification email resent successfully" };
+    return { message: "Verification email sent successfully" };
   } catch (error) {
     throw error;
   }

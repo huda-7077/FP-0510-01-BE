@@ -31,6 +31,8 @@ model User {
   profilePicture     String?
   phoneNumber        String?
   cvUrl              String?
+  headline           String?
+  skills             String[]
   isVerified         Boolean
   isDeleted          Boolean
   createdAt          DateTime             @default(now())
@@ -49,8 +51,23 @@ model User {
   resetPasswordToken ResetPasswordToken[]
   payments           Payment[]
   subscriptions      Subscription[]
+  experience         WorkExperience[]
 
   @@map("users")
+}
+
+model WorkExperience {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  companyName  String
+  jobTitle     String
+  startDate    DateTime
+  endDate      DateTime?
+  isCurrentJob Boolean   @default(false)
+  description  String?
+  user         User      @relation(fields: [userId], references: [id])
+
+  @@map("work_experiences")
 }
 
 model VerificationToken {
@@ -88,6 +105,7 @@ model Company {
   links            String?
   employeeCount    Int?
   establishedYear  Int
+  about            String?
   isDeleted        Boolean
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
