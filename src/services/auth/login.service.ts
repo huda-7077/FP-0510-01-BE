@@ -6,7 +6,7 @@ import { prisma } from "../../lib/prisma";
 export const loginService = async (email: string, password: string) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email, isDeleted: false },
     });
 
     if (!user) {
