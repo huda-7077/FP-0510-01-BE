@@ -1,5 +1,4 @@
 import * as streamifier from "streamifier";
-
 import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import {
   CLOUDINARY_API_KEY,
@@ -13,27 +12,44 @@ cloudinary.config({
   cloud_name: CLOUDINARY_CLOUD_NAME,
 });
 
+interface CloudinaryUploadOptions {
+  folder?: string;
+  resource_type?: "auto" | "image" | "video" | "raw";
+}
+
 export const cloudinaryUpload = (
-  file: Express.Multer.File
+  file: Express.Multer.File,
+  options: CloudinaryUploadOptions = {}
 ): Promise<UploadApiResponse> => {
   return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      (error, result: UploadApiResponse) => {
+    const uploadOptions = {
+      folder: options.folder,
+      resource_type: options.resource_type || (file.mimetype === 'application/pdf' ? 'raw' : 'auto'),
+      filename_override: file.originalname,
+    };
+
+    cloudinary.uploader.upload_stream(
+      uploadOptions,
+      (error, result: UploadApiResponse | undefined) => {
         if (error) return reject(error);
-        resolve(result);
+        if (result) {
+          resolve(result);
+        } else {
+          reject(new Error("Upload result is undefined"));
+        }
       }
-    );
-    streamifier.createReadStream(file.buffer).pipe(uploadStream);
+    ).end(file.buffer);
   });
 };
-const extractPublicIdFromUrl = (url: string) => {
-  const UrlParts = url.split("/");
-  const publicIdWithExtension = UrlParts[UrlParts.length - 1];
+
+const extractPublicIdFromUrl = (url: string): string => {
+  const urlParts = url.split("/");
+  const publicIdWithExtension = urlParts[urlParts.length - 1];
   const publicId = publicIdWithExtension.split(".")[0];
   return publicId;
 };
 
-export const cloudinaryRemove = async (secure_url: string) => {
+export const cloudinaryRemove = async (secure_url: string): Promise<any> => {
   try {
     const publicId = extractPublicIdFromUrl(secure_url);
     return await cloudinary.uploader.destroy(publicId);
