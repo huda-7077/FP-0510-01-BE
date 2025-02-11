@@ -1,23 +1,17 @@
 import { NextFunction, Request, Response } from "express";
 import { getCompanyLocationService } from "../services/company-location/get-company-location.service";
+import { createCompanyLocationService } from "../services/company-location/create-company-location.service";
 import { getCompanyLocationsService } from "../services/company-location/get-company-locations.service";
+import { deleteCompanyLocationService } from "../services/company-location/delete-company-location.service";
 
-export const getCompanyLocationsController = async (
+export const createCompanyLocationController = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const query = {
-      take: parseInt(req.query.take as string) || 3,
-      page: parseInt(req.query.page as string) || 1,
-      sortBy: (req.query.sortBy as string) || "id",
-      sortOrder: (req.query.sortOrder as string) || "desc",
-      search: (req.query.search as string) || "",
-      companyId: parseInt(req.query.companyId as string),
-    };
-
-    const result = await getCompanyLocationsService(query);
+    const userId = Number(res.locals.user.id);
+    const result = await createCompanyLocationService(userId, req.body);
     res.status(200).send(result);
   } catch (error) {
     next(error);
@@ -32,6 +26,35 @@ export const getCompanyLocationController = async (
   try {
     const { id } = req.params;
     const result = await getCompanyLocationService(parseInt(id));
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCompanyLocationsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = Number(res.locals.user.id);
+    const result = await getCompanyLocationsService(userId);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteCompanyLocationController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = Number(res.locals.user.id);
+    const { id } = req.params;
+    const result = await deleteCompanyLocationService(Number(id), userId);
     res.status(200).send(result);
   } catch (error) {
     next(error);

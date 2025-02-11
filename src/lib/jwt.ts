@@ -28,6 +28,7 @@ export const verifyToken = (
       } else {
         res.status(401).send({ message: "Invalid token" });
       }
+      return;
     }
     res.locals.user = payload;
 

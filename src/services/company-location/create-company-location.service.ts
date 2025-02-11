@@ -1,6 +1,10 @@
+import { CompanyLocation } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 
-export const getCompanyLocationsService = async (userId: number) => {
+export const createCompanyLocationService = async (
+  userId: number,
+  body: CompanyLocation
+) => {
   try {
     const user = await prisma.user.findFirst({
       where: {
@@ -20,23 +24,14 @@ export const getCompanyLocationsService = async (userId: number) => {
       throw new Error("Company not found");
     }
 
-    const locations = await prisma.companyLocation.findMany({
-      where: {
+    const location = await prisma.companyLocation.create({
+      data: {
+        ...body,
         companyId: user.company.id,
-      },
-      include: {
-        regency: {
-          include: {
-            province: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
       },
     });
 
-    return locations;
+    return location;
   } catch (error) {
     throw error;
   }

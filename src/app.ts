@@ -2,20 +2,24 @@ import cors from "cors";
 import express from "express";
 import "./lib/scheduler";
 import { errorMiddleware } from "./middleware/error.middleware";
+import accountRouter from "./routes/account.router";
 import assessmentQuestionRouter from "./routes/assessment-question.router";
 import questionOptionRouter from "./routes/question-option.router";
 import userAssessmentUser from "./routes/user-assessment.router";
 import companyLocationRouter from "./routes/company-location.router";
 import assessmentRouter from "./routes/assessment.router";
 import authRouter from "./routes/auth.router";
+import companyRouter from "./routes/company.router";
 import invoiceRouter from "./routes/invoice.router";
 import jobApplicationRouter from "./routes/job-applicaton.router";
 import jobRouter from "./routes/job.router";
+import locationRouter from "./routes/location.router";
 import paymentRouter from "./routes/payment.router";
 import sampleRouter from "./routes/sample.router";
 import subscriptionCategoryRouter from "./routes/subscription-category.router";
 import subscriptionRouter from "./routes/subscription.router";
 import userRouter from "./routes/user.router";
+import workExperienceRouter from "./routes/work-experience.router";
 import xenditRouter from "./routes/xendit-webhook.router";
 
 const app = express();
@@ -43,6 +47,10 @@ app.use("/subscription-categories", subscriptionCategoryRouter);
 app.use("/subscriptions", subscriptionRouter);
 app.use("/xendit-webhook", xenditRouter);
 app.use("/auth", authRouter);
+app.use("/accounts", accountRouter);
+app.use("/locations", locationRouter);
+app.use("/work-experiences", workExperienceRouter);
+app.use("/companies", companyRouter);
 
 // middleware error
 app.use(errorMiddleware);

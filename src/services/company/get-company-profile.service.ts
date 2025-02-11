@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma";
 
-export const getCompanyLocationsService = async (userId: number) => {
+export const getCompanyProfileService = async (userId: number) => {
   try {
     const user = await prisma.user.findFirst({
       where: {
@@ -20,23 +20,13 @@ export const getCompanyLocationsService = async (userId: number) => {
       throw new Error("Company not found");
     }
 
-    const locations = await prisma.companyLocation.findMany({
-      where: {
-        companyId: user.company.id,
-      },
-      include: {
-        regency: {
-          include: {
-            province: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const { company, phoneNumber, email } = user;
 
-    return locations;
+    return {
+      ...company,
+      phoneNumber,
+      email,
+    };
   } catch (error) {
     throw error;
   }
