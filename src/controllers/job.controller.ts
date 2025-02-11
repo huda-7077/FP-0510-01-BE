@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { getJobsService } from "../services/job/get-jobs.service";
 import { getJobCategoriesService } from "../services/job/get-jobs-categories.service";
 import { getJobService } from "../services/job/get-job.service";
+import { createJobService } from "../services/job/create-job.service";
 
 export const getJobsController = async (
   req: Request,
@@ -55,6 +56,22 @@ export const getJobCategoriesController = async (
 
     const result = await getJobCategoriesService(query);
     res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createJobController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    const bannerImage = files?.bannerImage?.[0];
+
+    const result = await createJobService(req.body, req.body.tags, bannerImage);
+    res.status(201).send(result);
   } catch (error) {
     next(error);
   }

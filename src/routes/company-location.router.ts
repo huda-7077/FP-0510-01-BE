@@ -1,8 +1,12 @@
 import { Router } from "express";
-import { getCompanyLocationController } from "../controllers/company-location.controller";
+import {
+  getCompanyLocationController,
+  getCompanyLocationsController,
+} from "../controllers/company-location.controller";
 
 const router = Router();
 
+router.get("/", getCompanyLocationsController);
 router.get("/:id", getCompanyLocationController);
 
 export default router;
