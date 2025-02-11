@@ -17,38 +17,38 @@ model Sample {
 }
 
 model User {
-  id                 Int                  @id @default(autoincrement())
-  companyId          Int?
-  regencyId          Int?
-  email              String               @unique
-  password           String?
-  role               UserRole
-  fullName           String
-  dateOfBirth        DateTime?
-  gender             UserGender?
-  educationLevel     String?
-  currentAddress     String?
-  profilePicture     String?
-  phoneNumber        String?
-  cvUrl              String?
-  isVerified         Boolean
-  isDeleted          Boolean
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  company            Company?             @relation(fields: [companyId], references: [id])
-  regency            Regency?             @relation(fields: [regencyId], references: [id])
-  jobApplications    JobApplication[]
-  userBadges         UserBadge[]
-  companyReviews     CompanyReview[]
-  savedJobs          SavedJob[]
-  employees          Employee[]
-  userCourses        UserCourse[]
-  certificates       Certificate[]
-  userAssessments    UserAssessment[]
-  verificationTokens VerificationToken[]
-  resetPasswordToken ResetPasswordToken[]
-  payments           Payment[]
-  subscriptions      Subscription[]
+  id                   Int                   @id @default(autoincrement())
+  companyId            Int?
+  regencyId            Int?
+  email                String                @unique
+  password             String?
+  role                 UserRole
+  fullName             String
+  dateOfBirth          DateTime?
+  gender               UserGender?
+  educationLevel       String?
+  currentAddress       String?
+  profilePicture       String?
+  phoneNumber          String?
+  cvUrl                String?
+  isVerified           Boolean
+  isDeleted            Boolean
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  company              Company?              @relation(fields: [companyId], references: [id])
+  regency              Regency?              @relation(fields: [regencyId], references: [id])
+  jobApplications      JobApplication[]
+  userBadges           UserBadge[]
+  companyReviews       CompanyReview[]
+  savedJobs            SavedJob[]
+  employees            Employee[]
+  certificates         Certificate[]
+  userAssessments      UserAssessment[]
+  verificationTokens   VerificationToken[]
+  resetPasswordToken   ResetPasswordToken[]
+  payments             Payment[]
+  subscriptions        Subscription[]
+  userSkillAssessments UserSkillAssessment[]
 
   @@map("users")
 }
@@ -296,62 +296,67 @@ model Employee {
   @@map("employees")
 }
 
-model Course {
-  id              Int              @id @default(autoincrement())
-  title           String
-  description     String
-  passingScore    Int
-  // badge Url
-  status          CourseStatus
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  courseQuestions CourseQuestion[]
-  userCourses     UserCourse[]
+model SkillAssessment {
+  id                       Int                       @id @default(autoincrement())
+  title                    String
+  slug                     String                    @unique
+  description              String
+  passingScore             Int
+  badgeImage               String
+  status                   SkillAssessmentStatus
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  skillAssessmentQuestions SkillAssessmentQuestion[]
+  userSkillAssessments     UserSkillAssessment[]
 
-  @@map("courses")
+  @@map("skill_assessments")
 }
 
-model CourseQuestion {
-  id            Int            @id @default(autoincrement())
-  courseId      Int
-  question      String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  course        Course         @relation(fields: [courseId], references: [id])
-  courseOptions CourseOption[]
+model SkillAssessmentQuestion {
+  id                     Int                     @id @default(autoincrement())
+  skillAssessmentId      Int
+  question               String
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  skillAssessment        SkillAssessment         @relation(fields: [skillAssessmentId], references: [id])
+  skillAssessmentOptions SkillAssessmentOption[]
 
-  @@map("course_questions")
+  @@map("skill_assessment_questions")
 }
 
-model CourseOption {
-  id             Int            @id @default(autoincrement())
-  questionId     Int
-  option         String
-  isCorrect      Boolean
-  createdAt      DateTime       @default(now())
-  courseQuestion CourseQuestion @relation(fields: [questionId], references: [id])
+model SkillAssessmentOption {
+  id                        Int                     @id @default(autoincrement())
+  skillAssessmentQuestionId Int
+  option                    String
+  isCorrect                 Boolean
+  createdAt                 DateTime                @default(now())
+  skillAssessmentQuestion   SkillAssessmentQuestion @relation(fields: [skillAssessmentQuestionId], references: [id])
 
-  @@map("course_options")
+  @@map("skill_assessments_options")
 }
 
-model UserCourse {
-  id        Int      @id @default(autoincrement())
-  courseId  Int
-  userId    Int
-  score     Int
-  createdAt DateTime @default(now())
-  course    Course   @relation(fields: [courseId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+model UserSkillAssessment {
+  id                Int             @id @default(autoincrement())
+  userId            Int
+  skillAssessmentId Int
+  score             Int
+  createdAt         DateTime        @default(now())
+  skillAssessment   SkillAssessment @relation(fields: [skillAssessmentId], references: [id])
+  user              User            @relation(fields: [userId], references: [id])
+  Certificate       Certificate[]
 
-  @@map("user_courses")
+  @@map("user_skill_assessments")
 }
 
 model Certificate {
-  id             Int      @id @default(autoincrement())
-  userId         Int
-  certificateUrl String
-  createdAt      DateTime @default(now())
-  user           User     @relation(fields: [userId], references: [id])
+  id                    Int                 @id @default(autoincrement())
+  userId                Int
+  userSkillAssessmentId Int
+  uuid                  String              @default(uuid())
+  certificateUrl        String?
+  createdAt             DateTime            @default(now())
+  user                  User                @relation(fields: [userId], references: [id])
+  userSkillAssessment   UserSkillAssessment @relation(fields: [userSkillAssessmentId], references: [id])
 
   @@map("certificates")
 }
@@ -450,7 +455,7 @@ enum PaymentStatus {
   CANCELLED
 }
 
-enum CourseStatus {
+enum SkillAssessmentStatus {
   PUBLISHED
   DRAFT
 }
