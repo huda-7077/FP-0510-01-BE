@@ -20,13 +20,19 @@ export const updateJobApplicationService = async (
   id: number
 ) => {
   try {
+    if (!id || id <= 0) {
+      throw new Error("Invalid job application ID.");
+    }
+
+    const { status } = body;
+
     const result = await prisma.$transaction(async (prisma) => {
       const existingJobApplication = await prisma.jobApplication.findUnique({
         where: { id },
       });
 
       if (!existingJobApplication) {
-        throw new Error("Job application not found");
+        throw new Error("Job application not found.");
       }
 
       const updatedJobApplication = await prisma.jobApplication.update({
@@ -62,11 +68,15 @@ export const updateJobApplicationService = async (
       });
 
       if (
-        body.status === "IN_REVIEW" &&
+        status === "IN_REVIEW" &&
         updatedJobApplication.job.requiresAssessment
       ) {
-        const assessmentId = updatedJobApplication.job.assessments[0].id;
+        const assessmentId = updatedJobApplication.job.assessments[0]?.id;
         const userId = updatedJobApplication.userId;
+
+        if (!assessmentId) {
+          throw new Error("No assessment available for this job.");
+        }
 
         const existingUserAssessment = await prisma.userAssessment.findFirst({
           where: { assessmentId, userId },
@@ -91,7 +101,7 @@ export const updateJobApplicationService = async (
     const { updatedJobApplication } = result;
 
     if (
-      body.status === "IN_REVIEW" &&
+      status === "IN_REVIEW" &&
       updatedJobApplication.job.requiresAssessment
     ) {
       try {
@@ -103,12 +113,10 @@ export const updateJobApplicationService = async (
           company_logo: updatedJobApplication.job.company.logo || undefined,
           assessment_url: `${BASE_URL_FE}/pre-test-assessment/${updatedJobApplication.job.assessments[0].id}`,
         });
-      } catch (error) {
-        console.error("Failed to send assessment reminder email:", error);
+      } catch (emailError) {
+        console.error("Failed to send assessment reminder email:", emailError);
       }
-    }
-
-    if (body.status === "ACCEPTED") {
+    } else if (status === "ACCEPTED") {
       try {
         sendApplicationAcceptanceEmail({
           email: updatedJobApplication.user.email,
@@ -117,10 +125,13 @@ export const updateJobApplicationService = async (
           applicant_name: updatedJobApplication.user.fullName,
           company_logo: updatedJobApplication.job.company.logo || undefined,
         });
-      } catch (error) {
-        console.error("Failed to send application acceptance email:", error);
+      } catch (emailError) {
+        console.error(
+          "Failed to send application acceptance email:",
+          emailError
+        );
       }
-    } else if (body.status === "REJECTED") {
+    } else if (status === "REJECTED") {
       try {
         sendApplicationRejectionEmail({
           email: updatedJobApplication.user.email,
@@ -129,14 +140,25 @@ export const updateJobApplicationService = async (
           applicant_name: updatedJobApplication.user.fullName,
           company_logo: updatedJobApplication.job.company.logo || undefined,
         });
-      } catch (error) {
-        console.error("Failed to send application rejection email:", error);
+      } catch (emailError) {
+        console.error(
+          "Failed to send application rejection email:",
+          emailError
+        );
       }
     }
 
     return result;
   } catch (error) {
+    //! Log the error for debugging purposes - delete on production
     console.error(`Error in updateJobApplication for id ${id}:`, error);
-    throw error;
+
+    let errorMessage =
+      "An unexpected error occurred while updating the job application.";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
+    throw new Error(errorMessage);
   }
 };

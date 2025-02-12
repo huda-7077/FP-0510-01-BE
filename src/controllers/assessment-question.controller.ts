@@ -4,6 +4,7 @@ import { createAssessmentQuestionsService } from "../services/assessment-questio
 import { getAssessmentQuestionsService } from "../services/assessment-questions/get-assessment-questions.service";
 import { updateAssessmentQuestionService } from "../services/assessment-questions/update-assessment-question.service";
 import { deleteAssessmentQuestionService } from "../services/assessment-questions/delete-assessment-question.service";
+import { getAssessmentQuestionCountService } from "../services/assessment-questions/get-assessment-question-count.service";
 
 export const getAssessmentQuestionsController = async (
   req: Request,
@@ -16,6 +17,19 @@ export const getAssessmentQuestionsController = async (
     };
 
     const result = await getAssessmentQuestionsService(query);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+export const getAssessmentQuestionCountController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const result = await getAssessmentQuestionCountService(parseInt(id));
     res.status(200).send(result);
   } catch (error) {
     next(error);

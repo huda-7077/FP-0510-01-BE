@@ -1,27 +1,23 @@
 import { Job } from "@prisma/client";
-import { cloudinaryUpload } from "../../lib/cloudinary";
 import { prisma } from "../../lib/prisma";
+import { ApiError } from "../../utils/apiError";
+import { cloudinaryUpload } from "../../lib/cloudinary";
 
-export const createJobService = async (
+export const updateJobService = async (
+  id: number,
   body: Omit<Job, "id" | "createdAt" | "updatedAt" | "tags">,
   tags: string,
   bannerImageFile?: Express.Multer.File
 ) => {
   try {
-    const { title, companyId, companyLocationId, applicationDeadline } = body;
+    const { companyId, companyLocationId, applicationDeadline } = body;
 
-    if (!title || !companyId || !companyLocationId || !applicationDeadline) {
-      throw new Error(
-        "Missing required fields: title, companyId, companyLocationId, or applicationDeadline."
-      );
-    }
-
-    const existingJob = await prisma.job.findFirst({
-      where: { title, companyId: Number(companyId) },
+    const existingJob = await prisma.job.findUnique({
+      where: { id },
     });
 
-    if (existingJob) {
-      throw new Error("A job with this title already exists for the company.");
+    if (!existingJob) {
+      throw new ApiError(`Job with id ${id} not found`, 404);
     }
 
     let bannerImageUrl: string | undefined;
@@ -30,8 +26,9 @@ export const createJobService = async (
         const { secure_url } = await cloudinaryUpload(bannerImageFile);
         bannerImageUrl = secure_url;
       } catch (uploadError) {
-        throw new Error(
-          "Failed to upload banner image. Please try again later."
+        throw new ApiError(
+          "Failed to upload banner image. Please try again later.",
+          400
         );
       }
     }
@@ -41,7 +38,8 @@ export const createJobService = async (
       parsedTags = tags.split(",").map((tag) => tag.trim());
     }
 
-    const createdJob = await prisma.job.create({
+    const updatedJob = await prisma.job.update({
+      where: { id },
       data: {
         ...body,
         tags: parsedTags,
@@ -62,10 +60,10 @@ export const createJobService = async (
       },
     });
 
-    return createdJob;
+    return updatedJob;
   } catch (error) {
     //! Log the error for debugging purposes - delete on production
-    console.error("Error in createJobService:", error);
+    console.error("Error in updateJobService:", error);
 
     let errorMessage = "An unexpected error occurred while creating the job.";
     if (error instanceof Error) {

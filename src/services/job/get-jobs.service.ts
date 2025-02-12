@@ -22,19 +22,13 @@ export const getJobsService = async (query: GetJobsQuery) => {
       category,
       timeRange,
       isPublished,
-      isDeleted,
       companyId,
     } = query;
 
-    const whereClause: Prisma.JobWhereInput = {};
+    const whereClause: Prisma.JobWhereInput = { isDeleted: false };
 
     if (companyId) {
       whereClause.companyId = companyId;
-    }
-
-    if (isDeleted !== "") {
-      const convertIsDeleted = isDeleted === "true";
-      whereClause.isDeleted = convertIsDeleted;
     }
 
     if (isPublished !== "") {
