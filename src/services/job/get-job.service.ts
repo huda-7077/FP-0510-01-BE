@@ -3,7 +3,7 @@ import { prisma } from "../../lib/prisma";
 
 export const getJobService = async (id: number, companyId?: number) => {
   try {
-    const whereClause: Prisma.JobWhereUniqueInput = { id };
+    const whereClause: Prisma.JobWhereUniqueInput = { id, isDeleted: false };
 
     if (companyId) {
       whereClause.companyId = companyId;

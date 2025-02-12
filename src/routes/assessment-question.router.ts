@@ -3,6 +3,7 @@ import {
   createAssessmentQuestionController,
   createAssessmentQuestionsController,
   deleteAssessmentQuestionController,
+  getAssessmentQuestionCountController,
   getAssessmentQuestionsController,
   updateAssessmentQuestionController,
 } from "../controllers/assessment-question.controller";
@@ -18,6 +19,7 @@ const router = Router();
 
 //! Don't forget to add the verifyToken later!
 router.get("/", getAssessmentQuestionsController);
+router.get("/count/:id", getAssessmentQuestionCountController);
 router.post(
   "/",
   verifyToken,
