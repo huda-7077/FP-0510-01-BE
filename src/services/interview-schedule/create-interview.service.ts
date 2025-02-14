@@ -1,26 +1,66 @@
 import { Interview } from "@prisma/client";
-import { prisma } from "../../lib/prisma";
-import { ApiError } from "../../utils/apiError";
 import sendInterviewReminderEmail from "../../lib/handlebars/sendInterviewReminderEmail";
+import { prisma } from "../../lib/prisma";
 
-export const createInterviewService = async (body: Interview) => {
-  const { jobApplicationId } = body;
+export const createInterviewService = async (
+  userId: number,
+  body: Interview
+) => {
+  const { jobApplicationId, ...bodyData } = body;
 
   try {
+    const user = await prisma.user.findFirst({
+      where: {
+        id: userId,
+        isDeleted: false,
+      },
+      include: {
+        company: {
+          where: {
+            isDeleted: false,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new Error("Authentication Failed");
+    }
+
+    if (!user.companyId) {
+      throw new Error("Authorization Failed");
+    }
+
+    const jobApplication = await prisma.jobApplication.findFirst({
+      where: { id: jobApplicationId, job: { companyId: user.companyId } },
+    });
+
+    if (!jobApplication) {
+      throw new Error(
+        "Job application not found or you don't have access to this job application"
+      );
+    }
+
     return await prisma.$transaction(async (tx) => {
       const existingInterview = await tx.interview.findFirst({
-        where: { jobApplicationId },
+        where: {
+          jobApplicationId: jobApplication.id,
+        },
       });
 
       if (existingInterview) {
-        throw new ApiError(
-          `Interview schedule with job application #${jobApplicationId} already exists`,
-          409
+        // throw new ApiError(
+        //   `Interview schedule with job application #${jobApplicationId} already exists`,
+        //   409
+        // );
+
+        throw new Error(
+          "Interview schedule already exists for this applicant."
         );
       }
 
       const interview = await tx.interview.create({
-        data: { ...body },
+        data: { jobApplicationId: jobApplication.id, ...bodyData },
         include: {
           jobApplication: {
             include: {
@@ -57,21 +97,23 @@ export const createInterviewService = async (body: Interview) => {
       });
 
       await tx.jobApplication.update({
-        where: { id: jobApplicationId },
+        where: { id: jobApplication.id },
         data: {
           status: "INTERVIEW_SCHEDULED",
         },
       });
 
       sendInterviewReminderEmail({
-        applicant_name: interview.jobApplication.user.fullName,
         email: interview.jobApplication.user.email,
         position: interview.jobApplication.job.title,
         company_name: interview.jobApplication.job.company.name,
+        applicant_name: interview.jobApplication.user.fullName,
+        company_logo: interview.jobApplication.job.company.logo || undefined,
         scheduledDate: interview.scheduledDate,
         interviewerName: interview.interviewerName,
         location: interview.location,
-        company_logo: interview.jobApplication.job.company.logo || undefined,
+        meetingLink: interview.meetingLink || undefined,
+        notes: interview.notes || undefined,
       });
 
       return interview;
@@ -80,9 +122,11 @@ export const createInterviewService = async (body: Interview) => {
     //! Log unexpected errors for debugging purposes
     console.error("Unexpected error during interview creation:", error);
 
-    throw new ApiError(
-      "An unexpected error occurred while creating the interview",
-      400
-    );
+    // throw new ApiError(
+    //   "An unexpected error occurred while creating the interview",
+    //   400
+    // );
+
+    throw new Error();
   }
 };
