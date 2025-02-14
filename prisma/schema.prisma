@@ -216,6 +216,7 @@ model Interview {
   location         String
   meetingLink      String?
   notes            String?
+  isDeleted        Boolean        @default(false)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id])

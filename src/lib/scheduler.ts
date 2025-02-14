@@ -204,80 +204,6 @@ async function updateJobApplicationStatus() {
   }
 }
 
-async function deleteJobPermanently() {
-  try {
-    await prisma.$transaction(async (tx) => {
-      const jobsWithAssessment = await tx.job.findMany({
-        where: { requiresAssessment: true, isDeleted: true },
-        select: { id: true },
-      });
-
-      for (const { id: jobId } of jobsWithAssessment) {
-        const assessment = await tx.assessment.findUnique({
-          where: { jobId },
-          select: { id: true },
-        });
-
-        if (assessment) {
-          const questionsId = await tx.assessmentQuestion.findMany({
-            where: { assessmentId: assessment.id },
-            select: { id: true },
-          });
-
-          for (const { id: questionId } of questionsId) {
-            await tx.assessmentOption.deleteMany({
-              where: { questionId },
-            });
-          }
-
-          await tx.assessmentQuestion.deleteMany({
-            where: { assessmentId: assessment.id },
-          });
-
-          await tx.assessment.delete({
-            where: { id: assessment.id },
-          });
-        }
-
-        await prisma.jobApplication.deleteMany({
-          where: { jobId },
-        });
-      }
-
-      const { count } = await prisma.job.deleteMany({
-        where: { requiresAssessment: true, isDeleted: true },
-      });
-
-      console.log(
-        `Deleted ${count} jobs with assessment and its relation permanently.`
-      );
-    });
-
-    await prisma.$transaction(async (tx) => {
-      const jobsWithoutAssessmentId = await tx.job.findMany({
-        where: { requiresAssessment: false, isDeleted: true },
-        select: { id: true },
-      });
-
-      for (const { id: jobId } of jobsWithoutAssessmentId) {
-        await prisma.jobApplication.deleteMany({
-          where: { jobId },
-        });
-      }
-
-      const { count } = await prisma.job.deleteMany({
-        where: { requiresAssessment: false, isDeleted: true },
-      });
-
-      console.log(`Deleted ${count} jobs with no assessment permanently.`);
-    });
-
-    console.log("All operations completed successfully.");
-  } catch (error) {
-    console.error("Error during permanent job deletion:", error);
-  }
-}
-
 // Schedule the job to run every minute for testing purposes
 // schedule.scheduleJob("* * * * *", async () => {
 //   await sendNotificationSubscription();
@@ -302,10 +228,6 @@ schedule.scheduleJob("0 0 * * *", async () => {
 
 schedule.scheduleJob("0 0 * * *", async () => {
   await updateJobApplicationStatus();
-});
-
-schedule.scheduleJob("0 0 1 * *", async () => {
-  await deleteJobPermanently();
 });
 
 scheduleJobsBasedOnCreatedAt();
