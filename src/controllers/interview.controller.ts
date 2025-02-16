@@ -14,14 +14,16 @@ export const getInterviewsController = async (
     const query = {
       take: parseInt(req.query.take as string) || 3,
       page: parseInt(req.query.page as string) || 1,
-      sortBy: (req.query.sortBy as string) || "createdAt",
-      sortOrder: (req.query.sortOrder as string) || "asc",
+      sortBy: (req.query.sortBy as string) || "scheduledDate",
+      sortOrder: (req.query.sortOrder as string) || "desc",
       search: (req.query.search as string) || "",
+      startDate: (req.query.startDate as string) || undefined,
+      endDate: (req.query.endDate as string) || undefined,
     };
 
     const userId = res.locals.user.id;
-
     const result = await getInterviewsService(query, Number(userId));
+
     res.status(200).send(result);
   } catch (error) {
     next(error);

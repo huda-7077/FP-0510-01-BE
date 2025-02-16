@@ -5,6 +5,8 @@ import { ApiError } from "../../utils/apiError";
 
 interface GetInterviewsQuery extends PaginationQueryParams {
   search: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export const getInterviewsService = async (
@@ -18,7 +20,16 @@ export const getInterviewsService = async (
       sortOrder = "desc",
       take,
       search,
+      startDate,
+      endDate,
     } = query;
+
+    if ((startDate && !endDate) || (!startDate && endDate)) {
+      throw new ApiError(
+        "Both startDate and endDate must be provided for date range filtering",
+        400
+      );
+    }
 
     const user = await prisma.user.findFirst({
       where: {
@@ -56,8 +67,10 @@ export const getInterviewsService = async (
     } else {
       throw new ApiError("Unauthorized role", 403);
     }
+
     if (search) {
       whereClause.OR = [
+        { interviewerName: { contains: search, mode: "insensitive" } },
         {
           jobApplication: {
             user: { fullName: { contains: search, mode: "insensitive" } },
@@ -69,6 +82,13 @@ export const getInterviewsService = async (
           },
         },
       ];
+    }
+
+    if (startDate && endDate) {
+      whereClause.scheduledDate = {
+        gte: new Date(startDate),
+        lte: new Date(endDate),
+      };
     }
 
     const interviews = await prisma.interview.findMany({
@@ -108,7 +128,6 @@ export const getInterviewsService = async (
       },
     });
 
-    // Count total interviews matching the where clause
     const count = await prisma.interview.count({
       where: whereClause,
     });
