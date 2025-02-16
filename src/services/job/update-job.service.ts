@@ -13,7 +13,7 @@ export const updateJobService = async (
     const { companyId, companyLocationId, applicationDeadline } = body;
 
     const existingJob = await prisma.job.findUnique({
-      where: { id },
+      where: { id, isDeleted: false },
     });
 
     if (!existingJob) {

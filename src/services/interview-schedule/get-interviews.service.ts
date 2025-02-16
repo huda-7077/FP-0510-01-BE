@@ -20,7 +20,6 @@ export const getInterviewsService = async (
       search,
     } = query;
 
-    // Fetch the user and their associated company
     const user = await prisma.user.findFirst({
       where: {
         id: userId,
@@ -39,30 +38,24 @@ export const getInterviewsService = async (
       throw new ApiError("User not found", 404);
     }
 
-    // Initialize the where clause for filtering interviews
     const whereClause: Prisma.InterviewWhereInput = { isDeleted: false };
 
-    // Restrict interviews based on user role and companyId
     if (user.role === "ADMIN") {
       if (!user.companyId) {
         throw new ApiError("Admin is not associated with any company", 403);
       }
-      // Admins can only see interviews from their own company
       whereClause.jobApplication = {
         job: {
           companyId: user.companyId,
         },
       };
     } else if (user.role === "USER") {
-      // Users can only see interviews related to their userId
       whereClause.jobApplication = {
         userId: user.id,
       };
     } else {
       throw new ApiError("Unauthorized role", 403);
     }
-
-    // Add search functionality
     if (search) {
       whereClause.OR = [
         {

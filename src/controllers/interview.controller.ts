@@ -3,6 +3,7 @@ import { getInterviewsService } from "../services/interview-schedule/get-intervi
 import { createInterviewService } from "../services/interview-schedule/create-interview.service";
 import { updateInterviewService } from "../services/interview-schedule/update-interview.service";
 import { getInterviewService } from "../services/interview-schedule/get-interview.service";
+import { deleteInterviewService } from "../services/interview-schedule/delete-interview.service";
 
 export const getInterviewsController = async (
   req: Request,
@@ -66,6 +67,21 @@ export const updateInterviewController = async (
     const userId = res.locals.user.id;
     const result = await updateInterviewService(req.body, userId, parseInt(id));
     res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteInterviewController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const userId = res.locals.user.id;
+    const result = await deleteInterviewService(Number(id), userId);
+    res.status(201).send(result);
   } catch (error) {
     next(error);
   }

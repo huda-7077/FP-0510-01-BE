@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createInterviewController,
+  deleteInterviewController,
   getInterviewController,
   getInterviewsController,
   updateInterviewController,
@@ -39,6 +40,12 @@ router.patch(
   verifyRole(["ADMIN"]),
   validateUpdateInterview,
   updateInterviewController
+);
+router.delete(
+  "/:id",
+  verifyToken,
+  verifyRole(["ADMIN"]),
+  deleteInterviewController
 );
 
 export default router;
