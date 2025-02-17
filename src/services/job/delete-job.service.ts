@@ -3,7 +3,7 @@ import { prisma } from "../../lib/prisma";
 export const deleteJobService = async (id: number) => {
   try {
     const existingJob = await prisma.job.findUnique({
-      where: { id },
+      where: { id, isDeleted: false },
     });
 
     if (!existingJob) {

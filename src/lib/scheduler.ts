@@ -1,8 +1,9 @@
-import { PaymentStatus, SubscriptionStatus } from "@prisma/client";
+import { Interview, PaymentStatus, SubscriptionStatus } from "@prisma/client";
 import { format } from "date-fns";
 import * as schedule from "node-schedule";
 import { sendSubscriptionExpiryReminder } from "./handlebars/sendSubscriptionExpiryReminder";
 import { prisma } from "./prisma";
+import sendInterviewReminderEmail from "./handlebars/sendInterviewReminderEmail";
 
 async function updateExpiredPayments() {
   try {
@@ -204,77 +205,66 @@ async function updateJobApplicationStatus() {
   }
 }
 
-async function deleteJobPermanently() {
+async function interviewScheduleReminder() {
   try {
-    await prisma.$transaction(async (tx) => {
-      const jobsWithAssessment = await tx.job.findMany({
-        where: { requiresAssessment: true, isDeleted: true },
-        select: { id: true },
-      });
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
 
-      for (const { id: jobId } of jobsWithAssessment) {
-        const assessment = await tx.assessment.findUnique({
-          where: { jobId },
-          select: { id: true },
-        });
-
-        if (assessment) {
-          const questionsId = await tx.assessmentQuestion.findMany({
-            where: { assessmentId: assessment.id },
-            select: { id: true },
-          });
-
-          for (const { id: questionId } of questionsId) {
-            await tx.assessmentOption.deleteMany({
-              where: { questionId },
-            });
-          }
-
-          await tx.assessmentQuestion.deleteMany({
-            where: { assessmentId: assessment.id },
-          });
-
-          await tx.assessment.delete({
-            where: { id: assessment.id },
-          });
-        }
-
-        await prisma.jobApplication.deleteMany({
-          where: { jobId },
-        });
-      }
-
-      const { count } = await prisma.job.deleteMany({
-        where: { requiresAssessment: true, isDeleted: true },
-      });
-
-      console.log(
-        `Deleted ${count} jobs with assessment and its relation permanently.`
-      );
+    const interviews = await prisma.interview.findMany({
+      where: {
+        isDeleted: false,
+        scheduledDate: {
+          gte: now,
+          lte: tomorrow,
+        },
+      },
+      include: {
+        jobApplication: {
+          include: {
+            user: {
+              select: {
+                fullName: true,
+                email: true,
+              },
+            },
+            job: {
+              include: {
+                company: {
+                  select: {
+                    name: true,
+                    logo: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
 
-    await prisma.$transaction(async (tx) => {
-      const jobsWithoutAssessmentId = await tx.job.findMany({
-        where: { requiresAssessment: false, isDeleted: true },
-        select: { id: true },
-      });
-
-      for (const { id: jobId } of jobsWithoutAssessmentId) {
-        await prisma.jobApplication.deleteMany({
-          where: { jobId },
+    if (interviews) {
+      for (const interview of interviews) {
+        sendInterviewReminderEmail({
+          email: interview.jobApplication.user.email,
+          position: interview.jobApplication.job.title,
+          company_name: interview.jobApplication.job.company.name,
+          applicant_name: interview.jobApplication.user.fullName,
+          company_logo: interview.jobApplication.job.company.logo || undefined,
+          scheduledDate: interview.scheduledDate,
+          interviewerName: interview.interviewerName,
+          location: interview.location,
+          meetingLink: interview.meetingLink || undefined,
+          notes: interview.notes || undefined,
         });
+
+        console.log(
+          `Reminder email sent to ${interview.jobApplication.user.email} successfully!`
+        );
       }
-
-      const { count } = await prisma.job.deleteMany({
-        where: { requiresAssessment: false, isDeleted: true },
-      });
-
-      console.log(`Deleted ${count} jobs with no assessment permanently.`);
-    });
-
-    console.log("All operations completed successfully.");
+    }
   } catch (error) {
-    console.error("Error during permanent job deletion:", error);
+    console.error("Error sending interview reminder:", error);
   }
 }
 
@@ -304,10 +294,10 @@ schedule.scheduleJob("0 0 * * *", async () => {
   await updateJobApplicationStatus();
 });
 
-schedule.scheduleJob("0 0 1 * *", async () => {
-  await deleteJobPermanently();
-});
-
 scheduleJobsBasedOnCreatedAt();
+
+schedule.scheduleJob("0 0 * * *", async () => {
+  await interviewScheduleReminder();
+});
 
 console.log("Scheduled job initialized.");

@@ -1,17 +1,15 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { PaginationQueryParams } from "../../types/pagination";
+import { ApiError } from "../../utils/apiError";
 
 interface GetJobsQuery extends PaginationQueryParams {
   search: string;
   category: string;
-  timeRange?: string;
-  isPublished?: string;
-  isDeleted?: string;
-  companyId: number;
+  isPublished?: string; // Optional: "true", "false", or undefined
 }
 
-export const getJobsService = async (query: GetJobsQuery) => {
+export const getJobsService = async (query: GetJobsQuery, userId: number) => {
   try {
     const {
       page = 1,
@@ -20,20 +18,38 @@ export const getJobsService = async (query: GetJobsQuery) => {
       take,
       search,
       category,
-      timeRange,
       isPublished,
-      companyId,
     } = query;
+
+    const user = await prisma.user.findFirst({
+      where: {
+        id: userId,
+        isDeleted: false,
+      },
+      include: {
+        company: {
+          where: {
+            isDeleted: false,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new ApiError("User not found", 404);
+    }
 
     const whereClause: Prisma.JobWhereInput = { isDeleted: false };
 
-    if (companyId) {
-      whereClause.companyId = companyId;
+    if (user.role === "ADMIN") {
+      if (!user.companyId) {
+        throw new ApiError("Admin is not associated with any company", 403);
+      }
+      whereClause.companyId = user.companyId;
     }
 
-    if (isPublished !== "") {
-      const convertIsPublished = isPublished === "true";
-      whereClause.isPublished = convertIsPublished;
+    if (user.role === "USER") {
+      whereClause.isPublished = true;
     }
 
     if (category) {
@@ -47,56 +63,7 @@ export const getJobsService = async (query: GetJobsQuery) => {
       ];
     }
 
-    if (timeRange) {
-      const now = new Date();
-      let applicationDeadline: Date | undefined;
-
-      switch (timeRange) {
-        case "day":
-          applicationDeadline = new Date(now.setHours(23, 59, 59, 999));
-          break;
-        case "week":
-          const startOfWeek = new Date(
-            now.setDate(now.getDate() - now.getDay())
-          );
-          applicationDeadline = new Date(
-            startOfWeek.setDate(startOfWeek.getDate() + 6)
-          );
-          applicationDeadline.setHours(23, 59, 59, 999);
-          break;
-        case "month":
-          applicationDeadline = new Date(
-            now.getFullYear(),
-            now.getMonth() + 1,
-            0,
-            23,
-            59,
-            59,
-            999
-          );
-          break;
-        case "year":
-          applicationDeadline = new Date(
-            now.getFullYear(),
-            11,
-            31,
-            23,
-            59,
-            59,
-            999
-          );
-          break;
-        default:
-          throw new Error("Invalid timeRange value");
-      }
-
-      if (applicationDeadline) {
-        whereClause.applicationDeadline = {
-          lte: applicationDeadline,
-        };
-      }
-    }
-
+    // Fetch jobs
     const jobs = await prisma.job.findMany({
       where: whereClause,
       ...(take !== -1
@@ -105,8 +72,6 @@ export const getJobsService = async (query: GetJobsQuery) => {
             take: take || 10,
           }
         : {}),
-      skip: (page - 1) * take,
-      take: take,
       orderBy: {
         [sortBy]: sortOrder,
       },

@@ -22,10 +22,11 @@ export const getJobsController = async (
       category: (req.query.category as string) || "",
       isPublished: (req.query.isPublished as string) || "",
       isDeleted: (req.query.isDeleted as string) || "",
-      companyId: parseInt(req.query.companyId as string) || 0,
     };
 
-    const result = await getJobsService(query);
+    const userId = res.locals.user.id;
+
+    const result = await getJobsService(query, userId);
     res.status(200).send(result);
   } catch (error) {
     next(error);

@@ -8,7 +8,7 @@ export const updateJobStatusService = async (
 ) => {
   try {
     const existingJob = await prisma.job.findUnique({
-      where: { id },
+      where: { id, isDeleted: false },
     });
 
     if (!existingJob) {
