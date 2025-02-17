@@ -85,9 +85,12 @@ export const getInterviewsService = async (
     }
 
     if (startDate && endDate) {
+      const adjustedEndDate = new Date(endDate);
+      adjustedEndDate.setHours(23, 59, 59, 999);
+
       whereClause.scheduledDate = {
         gte: new Date(startDate),
-        lte: new Date(endDate),
+        lte: adjustedEndDate,
       };
     }
 

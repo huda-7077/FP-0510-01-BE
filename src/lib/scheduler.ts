@@ -1,8 +1,9 @@
-import { PaymentStatus, SubscriptionStatus } from "@prisma/client";
+import { Interview, PaymentStatus, SubscriptionStatus } from "@prisma/client";
 import { format } from "date-fns";
 import * as schedule from "node-schedule";
 import { sendSubscriptionExpiryReminder } from "./handlebars/sendSubscriptionExpiryReminder";
 import { prisma } from "./prisma";
+import sendInterviewReminderEmail from "./handlebars/sendInterviewReminderEmail";
 
 async function updateExpiredPayments() {
   try {
@@ -204,6 +205,69 @@ async function updateJobApplicationStatus() {
   }
 }
 
+async function interviewScheduleReminder() {
+  try {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+
+    const interviews = await prisma.interview.findMany({
+      where: {
+        isDeleted: false,
+        scheduledDate: {
+          gte: now,
+          lte: tomorrow,
+        },
+      },
+      include: {
+        jobApplication: {
+          include: {
+            user: {
+              select: {
+                fullName: true,
+                email: true,
+              },
+            },
+            job: {
+              include: {
+                company: {
+                  select: {
+                    name: true,
+                    logo: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (interviews) {
+      for (const interview of interviews) {
+        sendInterviewReminderEmail({
+          email: interview.jobApplication.user.email,
+          position: interview.jobApplication.job.title,
+          company_name: interview.jobApplication.job.company.name,
+          applicant_name: interview.jobApplication.user.fullName,
+          company_logo: interview.jobApplication.job.company.logo || undefined,
+          scheduledDate: interview.scheduledDate,
+          interviewerName: interview.interviewerName,
+          location: interview.location,
+          meetingLink: interview.meetingLink || undefined,
+          notes: interview.notes || undefined,
+        });
+
+        console.log(
+          `Reminder email sent to ${interview.jobApplication.user.email} successfully!`
+        );
+      }
+    }
+  } catch (error) {
+    console.error("Error sending interview reminder:", error);
+  }
+}
+
 // Schedule the job to run every minute for testing purposes
 // schedule.scheduleJob("* * * * *", async () => {
 //   await sendNotificationSubscription();
@@ -231,5 +295,9 @@ schedule.scheduleJob("0 0 * * *", async () => {
 });
 
 scheduleJobsBasedOnCreatedAt();
+
+schedule.scheduleJob("0 0 * * *", async () => {
+  await interviewScheduleReminder();
+});
 
 console.log("Scheduled job initialized.");
