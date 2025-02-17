@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  getCompaniesController,
   getCompanyProfileController,
   updateCompanyProfileController,
 } from "../controllers/company.controller";
@@ -11,6 +12,7 @@ import { verifyRole } from "../middleware/role.middleware";
 
 const router = Router();
 
+router.get("/", getCompaniesController);
 router.get(
   "/profile",
   verifyToken,
