@@ -361,7 +361,7 @@ model UserSkillAssessment {
   createdAt         DateTime        @default(now())
   skillAssessment   SkillAssessment @relation(fields: [skillAssessmentId], references: [id])
   user              User            @relation(fields: [userId], references: [id])
-  Certificate       Certificate[]
+  certificates      Certificate[]
 
   @@map("user_skill_assessments")
 }

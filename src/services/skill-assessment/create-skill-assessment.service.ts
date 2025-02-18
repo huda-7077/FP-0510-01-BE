@@ -10,40 +10,44 @@ interface CreateSkillAssessmentBody {
   passingScore: number;
 }
 
-export const createSkillAssessmentServices = async (
+export const createSkillAssessmentService = async (
   body: CreateSkillAssessmentBody,
   badgeImage: Express.Multer.File
 ) => {
-  const { title, description, passingScore } = body;
+  try {
+    const { title, description, passingScore } = body;
 
-  const existingSkillAssessment = await prisma.skillAssessment.findFirst({
-    where: { title },
-  });
+    const existingSkillAssessment = await prisma.skillAssessment.findFirst({
+      where: { title },
+    });
 
-  if (existingSkillAssessment) {
-    throw new ApiError(
-      `Skill assessment with title ${title} already exists`,
-      409
-    );
+    if (existingSkillAssessment) {
+      throw new ApiError(
+        `Skill assessment with title ${title} already exists`,
+        409
+      );
+    }
+
+    const slug = await generateSkillAssessmentUniqueSlug(title);
+
+    const { secure_url } = await cloudinaryUpload(badgeImage);
+
+    const skillAssessment = await prisma.skillAssessment.create({
+      data: {
+        title,
+        slug,
+        description,
+        passingScore: Number(passingScore),
+        badgeImage: secure_url,
+        status: SkillAssessmentStatus.DRAFT,
+      },
+    });
+
+    return {
+      skillAssessment,
+      messages: "Skill assessment created successfully",
+    };
+  } catch (error) {
+    throw error;
   }
-
-  const slug = await generateSkillAssessmentUniqueSlug(title);
-
-  const { secure_url } = await cloudinaryUpload(badgeImage);
-
-  const skillAssessment = await prisma.skillAssessment.create({
-    data: {
-      title,
-      slug,
-      description,
-      passingScore: Number(passingScore),
-      badgeImage: secure_url,
-      status: SkillAssessmentStatus.DRAFT,
-    },
-  });
-
-  return {
-    skillAssessment,
-    messages: "Skill assessment created successfully",
-  };
 };

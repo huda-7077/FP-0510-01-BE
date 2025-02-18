@@ -16,6 +16,8 @@ import locationRouter from "./routes/location.router";
 import paymentRouter from "./routes/payment.router";
 import questionOptionRouter from "./routes/question-option.router";
 import sampleRouter from "./routes/sample.router";
+import skillAssessmentQuestionOptionRouter from "./routes/skill-assessment-question-option.router";
+import skillAssessmentQuestionRouter from "./routes/skill-assessment-question.router";
 import skillAssessmentRouter from "./routes/skill-assessment.router";
 import subscriptionCategoryRouter from "./routes/subscription-category.router";
 import subscriptionRouter from "./routes/subscription.router";
@@ -50,6 +52,11 @@ app.use("/subscriptions", subscriptionRouter);
 app.use("/xendit-webhook", xenditRouter);
 app.use("/auth", authRouter);
 app.use("/skill-assessments", skillAssessmentRouter);
+app.use("/skill-assessment-questions", skillAssessmentQuestionRouter);
+app.use(
+  "/skill-assessment-question-options",
+  skillAssessmentQuestionOptionRouter
+);
 app.use("/certificates", certificateRouter);
 app.use("/accounts", accountRouter);
 app.use("/locations", locationRouter);
