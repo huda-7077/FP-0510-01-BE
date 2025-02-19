@@ -17,7 +17,7 @@ export const createJobService = async (
     }
 
     const existingJob = await prisma.job.findFirst({
-      where: { title, companyId: Number(companyId) },
+      where: { title, companyId: Number(companyId), isDeleted: false },
     });
 
     if (existingJob) {

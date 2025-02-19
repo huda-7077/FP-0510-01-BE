@@ -19,7 +19,7 @@ import { imageFilter } from "../lib/fileFilter";
 
 const router = Router();
 
-router.get("/", getJobsController);
+router.get("/", verifyToken, getJobsController);
 router.get("/categories", getJobCategoriesController);
 router.get("/:id", getJobController);
 router.post(

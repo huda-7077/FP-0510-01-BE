@@ -17,7 +17,7 @@ router.post(
   validateCreateWorkExperience,
   createWorkExperienceController
 );
-router.get("/", verifyToken, verifyRole(["USER"]), getWorkExperiencesController);
+router.get("/", verifyToken, getWorkExperiencesController);
 router.delete(
   "/:id",
   verifyToken,

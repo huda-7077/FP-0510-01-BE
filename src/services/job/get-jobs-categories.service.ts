@@ -9,7 +9,7 @@ export const getJobCategoriesService = async (query: GetJobCategoriesQuery) => {
     const result = await prisma.$queryRaw<{ category: string }[]>`
           SELECT DISTINCT category 
           FROM "jobs"
-          WHERE "companyId" = ${query.companyId}
+          WHERE "companyId" = ${query.companyId} AND "isDeleted" = ${false}
           ORDER BY category ASC
         `;
 

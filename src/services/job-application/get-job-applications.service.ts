@@ -92,6 +92,7 @@ export const getJobApplicationsService = async (
                 regency: true,
               },
             },
+            experience: true,
           },
         },
       },
