@@ -1,8 +1,7 @@
-import { SkillAssessmentStatus } from "@prisma/client";
+import { cloudinaryRemove, cloudinaryUpload } from "../../lib/cloudinary";
 import { prisma } from "../../lib/prisma";
 import { ApiError } from "../../utils/apiError";
 import { generateSkillAssessmentUniqueSlug } from "../../utils/slug";
-import { cloudinaryRemove, cloudinaryUpload } from "../../lib/cloudinary";
 
 interface UpdateSkillAssessmentBody {
   slug: string;
@@ -10,7 +9,6 @@ interface UpdateSkillAssessmentBody {
   description: string;
   passingScore: number;
   generateSlug?: string;
-  status?: SkillAssessmentStatus;
 }
 
 export const updateSkillAssessmentService = async (
@@ -18,7 +16,7 @@ export const updateSkillAssessmentService = async (
   badgeImage: Express.Multer.File | undefined
 ) => {
   try {
-    const { slug, title, passingScore, generateSlug, ...otherBody } = body;
+    const { slug, title, passingScore, generateSlug, description } = body;
 
     const existingSkillAssessment = await prisma.skillAssessment.findFirst({
       where: { slug },
@@ -59,14 +57,14 @@ export const updateSkillAssessmentService = async (
       where: { id: existingSkillAssessment.id },
       data: secure_url
         ? {
-            ...otherBody,
+            description,
             title,
             slug: newSlug,
             passingScore: Number(passingScore),
             badgeImage: secure_url,
           }
         : {
-            ...otherBody,
+            description,
             title,
             slug: newSlug,
             passingScore: Number(passingScore),

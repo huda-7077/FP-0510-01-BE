@@ -4,6 +4,7 @@ import { SkillAssessmentStatus } from "@prisma/client";
 import { getSkillAssessmentsService } from "../services/skill-assessment/get-skill-assessments.service";
 import { updateSkillAssessmentService } from "../services/skill-assessment/update-skill-assessment.service";
 import { createSkillAssessmentService } from "../services/skill-assessment/create-skill-assessment.service";
+import { updateSkillAssessmentStatusService } from "../services/skill-assessment/update-skill-assessment-status.service";
 
 export const getSkillAssessmentController = async (
   req: Request,
@@ -75,6 +76,23 @@ export const updateSkillAssessmentController = async (
       { ...req.body, slug },
       files.badgeImage?.[0]
     );
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+export const updateSkillAssessmentStatusController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { slug } = req.params;
+
+    const result = await updateSkillAssessmentStatusService({
+      ...req.body,
+      slug,
+    });
     res.status(200).send(result);
   } catch (error) {
     next(error);

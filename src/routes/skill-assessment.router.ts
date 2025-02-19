@@ -4,6 +4,7 @@ import {
   getSkillAssessmentController,
   getSkillAssessmentsController,
   updateSkillAssessmentController,
+  updateSkillAssessmentStatusController,
 } from "../controllers/skill-assessment.controller";
 import { imageFilter } from "../lib/fileFilter";
 import { verifyToken } from "../lib/jwt";
@@ -45,6 +46,12 @@ router.patch(
   imageFilter,
   validateUpdateSkillAssessment,
   updateSkillAssessmentController
+);
+router.patch(
+  "/:slug/status",
+  verifyToken,
+  verifyRole(["DEVELOPER"]),
+  updateSkillAssessmentStatusController
 );
 
 export default router;

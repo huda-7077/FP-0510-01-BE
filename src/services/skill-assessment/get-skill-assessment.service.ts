@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma";
+import { ApiError } from "../../utils/apiError";
 
 export const getSkillAssessmentService = async (slug: string) => {
   try {
@@ -7,7 +8,7 @@ export const getSkillAssessmentService = async (slug: string) => {
     });
 
     if (!skillAssessment) {
-      throw new Error("Assessment not found");
+      throw new ApiError("Assessment not found", 404);
     }
 
     return skillAssessment;
