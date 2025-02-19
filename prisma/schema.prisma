@@ -332,26 +332,40 @@ model SkillAssessment {
 }
 
 model SkillAssessmentQuestion {
-  id                     Int                     @id @default(autoincrement())
-  skillAssessmentId      Int
-  question               String
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
-  skillAssessment        SkillAssessment         @relation(fields: [skillAssessmentId], references: [id])
-  skillAssessmentOptions SkillAssessmentOption[]
+  id                         Int                         @id @default(autoincrement())
+  skillAssessmentId          Int
+  question                   String
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+  skillAssessment            SkillAssessment             @relation(fields: [skillAssessmentId], references: [id])
+  skillAssessmentOptions     SkillAssessmentOption[]
+  skillAssessmentUserAnswers SkillAssessmentUserAnswer[]
 
   @@map("skill_assessment_questions")
 }
 
 model SkillAssessmentOption {
-  id                        Int                     @id @default(autoincrement())
-  skillAssessmentQuestionId Int
-  option                    String
-  isCorrect                 Boolean
-  createdAt                 DateTime                @default(now())
-  skillAssessmentQuestion   SkillAssessmentQuestion @relation(fields: [skillAssessmentQuestionId], references: [id])
+  id                         Int                         @id @default(autoincrement())
+  skillAssessmentQuestionId  Int
+  option                     String
+  isCorrect                  Boolean
+  createdAt                  DateTime                    @default(now())
+  skillAssessmentQuestion    SkillAssessmentQuestion     @relation(fields: [skillAssessmentQuestionId], references: [id])
+  skillAssessmentUserAnswers SkillAssessmentUserAnswer[]
 
   @@map("skill_assessments_options")
+}
+
+model SkillAssessmentUserAnswer {
+  id                        Int                     @id @default(autoincrement())
+  userId                    Int
+  skillAssessmentQuestionId Int
+  selectedOptionId          Int
+  createdAt                 DateTime                @default(now())
+  skillAssessmentQuestion   SkillAssessmentQuestion @relation(fields: [skillAssessmentQuestionId], references: [id])
+  skillAssessmentOption     SkillAssessmentOption   @relation(fields: [selectedOptionId], references: [id])
+
+  @@map("skill_assessment_user_answers")
 }
 
 model UserSkillAssessment {
@@ -362,7 +376,7 @@ model UserSkillAssessment {
   createdAt         DateTime        @default(now())
   skillAssessment   SkillAssessment @relation(fields: [skillAssessmentId], references: [id])
   user              User            @relation(fields: [userId], references: [id])
-  Certificate       Certificate[]
+  certificates      Certificate[]
 
   @@map("user_skill_assessments")
 }
