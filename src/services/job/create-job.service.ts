@@ -38,7 +38,7 @@ export const createJobService = async (
 
     let parsedTags: string[] = [];
     if (tags.trim()) {
-      parsedTags = tags.split(",").map((tag) => tag.trim());
+      parsedTags = tags.split(",").map((tag) => tag.trim().toLocaleLowerCase());
     }
 
     const createdJob = await prisma.job.create({

@@ -18,6 +18,7 @@ export const getJobService = async (id: number, companyId?: number) => {
             regency: {
               select: {
                 regency: true,
+                province: { select: { province: true } },
               },
             },
           },
