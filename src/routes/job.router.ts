@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createJobController,
   deleteJobController,
+  getCompanyJobsController,
   getJobCategoriesController,
   getJobController,
   getJobsController,
@@ -19,7 +20,8 @@ import { imageFilter } from "../lib/fileFilter";
 
 const router = Router();
 
-router.get("/", verifyToken, getJobsController);
+router.get("/", getJobsController);
+router.get("/company", verifyToken, getCompanyJobsController);
 router.get("/categories", getJobCategoriesController);
 router.get("/:id", getJobController);
 router.post(
