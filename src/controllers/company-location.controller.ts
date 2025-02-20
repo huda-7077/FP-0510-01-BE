@@ -3,6 +3,8 @@ import { getCompanyLocationService } from "../services/company-location/get-comp
 import { createCompanyLocationService } from "../services/company-location/create-company-location.service";
 import { getCompanyLocationsService } from "../services/company-location/get-company-locations.service";
 import { deleteCompanyLocationService } from "../services/company-location/delete-company-location.service";
+import { TimeRange } from "../services/job/get-popular-job-categories.service";
+import { getPopularCompanyLocationsService } from "../services/company-location/get-popular-company-locations.service";
 
 export const createCompanyLocationController = async (
   req: Request,
@@ -40,6 +42,21 @@ export const getCompanyLocationsController = async (
   try {
     const userId = Number(res.locals.user.id);
     const result = await getCompanyLocationsService(userId);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPopularCompanyLocationsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const timeRange = (req.query.timeRange as TimeRange) || "Last 5 years";
+
+    const result = await getPopularCompanyLocationsService(timeRange);
     res.status(200).send(result);
   } catch (error) {
     next(error);

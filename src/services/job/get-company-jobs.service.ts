@@ -6,7 +6,6 @@ import { ApiError } from "../../utils/apiError";
 interface GetCompanyJobsQuery extends PaginationQueryParams {
   search: string;
   category: string;
-  isPublished?: string; // Optional: "true", "false", or undefined
 }
 
 export const getCompanyJobsService = async (
@@ -21,7 +20,6 @@ export const getCompanyJobsService = async (
       take,
       search,
       category,
-      isPublished,
     } = query;
 
     const user = await prisma.user.findFirst({
@@ -66,7 +64,6 @@ export const getCompanyJobsService = async (
       ];
     }
 
-    // Fetch jobs
     const jobs = await prisma.job.findMany({
       where: whereClause,
       ...(take !== -1

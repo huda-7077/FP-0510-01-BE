@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-
 const prisma = new PrismaClient();
 
 export const getUsersCountByProvinceService = async () => {
@@ -22,6 +21,9 @@ export const getUsersCountByProvinceService = async () => {
         p.province IS NOT NULL
       GROUP BY 
         p.province
+      ORDER BY 
+        users DESC
+      LIMIT 10
     `;
 
     const result = userCountByProvince.map((item: any) => ({
