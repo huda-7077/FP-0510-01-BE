@@ -9,16 +9,17 @@ import authRouter from "./routes/auth.router";
 import certificateRouter from "./routes/certificate.router";
 import companyLocationRouter from "./routes/company-location.router";
 import companyRouter from "./routes/company.router";
-import invoiceRouter from "./routes/invoice.router";
+import industryRouter from "./routes/industry.router";
 import interviewRouter from "./routes/interview.router";
+import invoiceRouter from "./routes/invoice.router";
 import jobApplicationRouter from "./routes/job-applicaton.router";
 import jobRouter from "./routes/job.router";
 import locationRouter from "./routes/location.router";
 import paymentRouter from "./routes/payment.router";
 import questionOptionRouter from "./routes/question-option.router";
 import sampleRouter from "./routes/sample.router";
-import skillAssessmentUserAnswerRouter from "./routes/skill-assessment-user-answer.router";
 import skillAssessmentQuestionRouter from "./routes/skill-assessment-question.router";
+import skillAssessmentUserAnswerRouter from "./routes/skill-assessment-user-answer.router";
 import skillAssessmentRouter from "./routes/skill-assessment.router";
 import subscriptionCategoryRouter from "./routes/subscription-category.router";
 import subscriptionRouter from "./routes/subscription.router";
@@ -61,6 +62,7 @@ app.use("/accounts", accountRouter);
 app.use("/locations", locationRouter);
 app.use("/work-experiences", workExperienceRouter);
 app.use("/companies", companyRouter);
+app.use("/industries", industryRouter);
 
 // middleware error
 app.use(errorMiddleware);
