@@ -1,5 +1,7 @@
 import { Router } from "express";
 import {
+  getAvgSalaryByPositionController,
+  getAvgSalaryByProvinceController,
   getJobApplicationsController,
   getJobApplicationTotalController,
   updateJobApplicationController,
@@ -12,8 +14,10 @@ const router = Router();
 
 //! Don't forget to add the verifyToken later!
 
-router.get("/", getJobApplicationsController);
+router.get("/", verifyToken, getJobApplicationsController);
 router.get("/total", getJobApplicationTotalController);
+router.get("/avg-salary/position", getAvgSalaryByPositionController);
+router.get("/avg-salary/province", getAvgSalaryByProvinceController);
 router.patch(
   "/:id",
   verifyToken,

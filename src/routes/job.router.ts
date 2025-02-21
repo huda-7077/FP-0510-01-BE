@@ -2,10 +2,12 @@ import { Router } from "express";
 import {
   createJobController,
   deleteJobController,
+  getCompanyJobController,
   getCompanyJobsController,
   getJobCategoriesController,
   getJobController,
   getJobsController,
+  getPopularJobCategoriesController,
   updateJobController,
   updateJobStatusController,
 } from "../controllers/job.controller";
@@ -24,6 +26,8 @@ router.get("/", getJobsController);
 router.get("/company", verifyToken, getCompanyJobsController);
 router.get("/categories", getJobCategoriesController);
 router.get("/:id", getJobController);
+router.get("/company/:id", verifyToken, getCompanyJobController);
+router.get("/categories/popular", getPopularJobCategoriesController);
 router.post(
   "/",
   verifyToken,

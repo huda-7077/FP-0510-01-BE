@@ -4,6 +4,7 @@ import {
   deleteCompanyLocationController,
   getCompanyLocationController,
   getCompanyLocationsController,
+  getPopularCompanyLocationsController,
 } from "../controllers/company-location.controller";
 import { verifyToken } from "../lib/jwt";
 import { verifyRole } from "../middleware/role.middleware";
@@ -18,6 +19,7 @@ router.get(
   getCompanyLocationsController
 );
 router.get("/:id", getCompanyLocationController);
+router.get("/province/popular", getPopularCompanyLocationsController);
 router.post(
   "/",
   verifyToken,
