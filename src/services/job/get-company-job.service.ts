@@ -19,17 +19,15 @@ export const getCompanyJobService = async (id: number, userId: number) => {
       },
     });
 
-    if (!user) {
-      throw new ApiError("User not found", 404);
-    }
-
     const whereClause: Prisma.JobWhereUniqueInput = { id, isDeleted: false };
 
-    if (user.role === "ADMIN") {
+    if (user) {
       if (!user.companyId) {
         throw new ApiError("Admin is not associated with any company", 403);
       }
       whereClause.companyId = user.companyId;
+    } else {
+      throw new ApiError("User not found", 404);
     }
 
     const job = await prisma.job.findUnique({

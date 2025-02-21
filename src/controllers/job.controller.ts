@@ -56,6 +56,8 @@ export const getCompanyJobsController = async (
       search: (req.query.search as string) || "",
       category: (req.query.category as string) || "",
       isDeleted: (req.query.isDeleted as string) || "",
+      startDate: (req.query.startDate as string) || undefined,
+      endDate: (req.query.endDate as string) || undefined,
     };
 
     const userId = res.locals.user.id;

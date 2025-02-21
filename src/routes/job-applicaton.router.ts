@@ -14,7 +14,7 @@ const router = Router();
 
 //! Don't forget to add the verifyToken later!
 
-router.get("/", getJobApplicationsController);
+router.get("/", verifyToken, getJobApplicationsController);
 router.get("/total", getJobApplicationTotalController);
 router.get("/avg-salary/position", getAvgSalaryByPositionController);
 router.get("/avg-salary/province", getAvgSalaryByProvinceController);

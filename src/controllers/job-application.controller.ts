@@ -38,7 +38,9 @@ export const getJobApplicationsController = async (
       educationLevel: (req.query.educationLevel as string) || "",
     };
 
-    const result = await getJobApplicationsService(query);
+    const userId = res.locals.user.id;
+
+    const result = await getJobApplicationsService(query, userId);
     res.status(200).send(result);
   } catch (error) {
     next(error);

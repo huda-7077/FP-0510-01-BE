@@ -26,7 +26,7 @@ router.get("/", getJobsController);
 router.get("/company", verifyToken, getCompanyJobsController);
 router.get("/categories", getJobCategoriesController);
 router.get("/:id", getJobController);
-router.get("/company/:id", getCompanyJobController);
+router.get("/company/:id", verifyToken, getCompanyJobController);
 router.get("/categories/popular", getPopularJobCategoriesController);
 router.post(
   "/",
