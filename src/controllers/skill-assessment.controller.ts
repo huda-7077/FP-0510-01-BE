@@ -5,6 +5,7 @@ import { getSkillAssessmentsService } from "../services/skill-assessment/get-ski
 import { updateSkillAssessmentService } from "../services/skill-assessment/update-skill-assessment.service";
 import { createSkillAssessmentService } from "../services/skill-assessment/create-skill-assessment.service";
 import { updateSkillAssessmentStatusService } from "../services/skill-assessment/update-skill-assessment-status.service";
+import { getSkillAssessmentsPublicService } from "../services/skill-assessment/get-skill-assessments-public.service";
 
 export const getSkillAssessmentController = async (
   req: Request,
@@ -13,7 +14,8 @@ export const getSkillAssessmentController = async (
 ) => {
   try {
     const slug = req.params.slug;
-    const result = await getSkillAssessmentService(slug);
+    const role = res.locals.user.role;
+    const result = await getSkillAssessmentService(slug, role);
     res.status(200).send(result);
   } catch (error) {
     next(error);
@@ -39,6 +41,26 @@ export const getSkillAssessmentsController = async (
         : undefined,
     };
     const result = await getSkillAssessmentsService(query);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getSkillAssessmentsPublicController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const query = {
+      take: parseInt(req.query.take as string) || 3,
+      page: parseInt(req.query.page as string) || 1,
+      sortBy: (req.query.sortBy as string) || "createdAt",
+      sortOrder: (req.query.sortOrder as string) || "desc",
+      search: (req.query.search as string) || "",
+    };
+    const result = await getSkillAssessmentsPublicService(query);
     res.status(200).send(result);
   } catch (error) {
     next(error);
