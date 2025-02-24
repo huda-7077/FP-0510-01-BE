@@ -7,6 +7,11 @@ import { updateJobService } from "../services/job/update-job.service";
 import { updateJobStatusService } from "../services/job/update-job-status.service";
 import { deleteJobService } from "../services/job/delete-job.service";
 import { getCompanyJobsService } from "../services/job/get-company-jobs.service";
+import {
+  getPopularJobCategoriesService,
+  TimeRange,
+} from "../services/job/get-popular-job-categories.service";
+import { getCompanyJobService } from "../services/job/get-company-job.service";
 
 export const getJobsController = async (
   req: Request,
@@ -50,8 +55,9 @@ export const getCompanyJobsController = async (
       sortOrder: (req.query.sortOrder as string) || "desc",
       search: (req.query.search as string) || "",
       category: (req.query.category as string) || "",
-      isPublished: (req.query.isPublished as string) || "",
       isDeleted: (req.query.isDeleted as string) || "",
+      startDate: (req.query.startDate as string) || undefined,
+      endDate: (req.query.endDate as string) || undefined,
     };
 
     const userId = res.locals.user.id;
@@ -78,6 +84,21 @@ export const getJobController = async (
   }
 };
 
+export const getCompanyJobController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const userId = res.locals.user.id;
+    const result = await getCompanyJobService(parseInt(id), userId);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getJobCategoriesController = async (
   req: Request,
   res: Response,
@@ -89,6 +110,21 @@ export const getJobCategoriesController = async (
     };
 
     const result = await getJobCategoriesService(query);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPopularJobCategoriesController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const timeRange = (req.query.timeRange as TimeRange) || "Last 5 years";
+
+    const result = await getPopularJobCategoriesService(timeRange);
     res.status(200).send(result);
   } catch (error) {
     next(error);

@@ -2,6 +2,11 @@ import { NextFunction, Request, Response } from "express";
 import { getJobApplicationsTotalService } from "../services/job-application/get-job-applications-total.service";
 import { getJobApplicationsService } from "../services/job-application/get-job-applications.service";
 import { updateJobApplicationService } from "../services/job-application/update-job-application.service";
+import {
+  getAvgSalaryByPositionService,
+  TimeRange,
+} from "../services/job-application/get-avg-salary-by-position";
+import { getAvgSalaryByProvinceService } from "../services/job-application/get-avg-salary-by-location";
 
 export const updateJobApplicationController = async (
   req: Request,
@@ -33,7 +38,9 @@ export const getJobApplicationsController = async (
       educationLevel: (req.query.educationLevel as string) || "",
     };
 
-    const result = await getJobApplicationsService(query);
+    const userId = res.locals.user.id;
+
+    const result = await getJobApplicationsService(query, userId);
     res.status(200).send(result);
   } catch (error) {
     next(error);
@@ -51,6 +58,36 @@ export const getJobApplicationTotalController = async (
     };
 
     const result = await getJobApplicationsTotalService(query);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAvgSalaryByPositionController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const timeRange = (req.query.timeRange as TimeRange) || "All Time";
+
+    const result = await getAvgSalaryByPositionService(timeRange);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAvgSalaryByProvinceController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const timeRange = (req.query.timeRange as TimeRange) || "All Time";
+
+    const result = await getAvgSalaryByProvinceService(timeRange);
     res.status(200).send(result);
   } catch (error) {
     next(error);
