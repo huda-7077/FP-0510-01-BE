@@ -10,6 +10,34 @@ interface GetJobsQuery extends PaginationQueryParams {
   endDate?: string;
   location?: string;
   companyId?: number;
+  userLatitude?: number;
+  userLongitude?: number;
+  maxDistance?: number;
+}
+
+function haversineDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371;
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function toRadians(degrees: number): number {
+  return degrees * (Math.PI / 180);
 }
 
 export const getJobsService = async (query: GetJobsQuery) => {
@@ -26,6 +54,9 @@ export const getJobsService = async (query: GetJobsQuery) => {
       endDate,
       location,
       companyId,
+      userLatitude,
+      userLongitude,
+      maxDistance = 50,
     } = query;
 
     const whereClause: Prisma.JobWhereInput = {
@@ -57,7 +88,6 @@ export const getJobsService = async (query: GetJobsQuery) => {
       const now = new Date();
       let startDateTime: Date;
       let endDateTime = now;
-
       if (timeRange === "week") {
         startDateTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       } else if (timeRange === "month") {
@@ -72,7 +102,6 @@ export const getJobsService = async (query: GetJobsQuery) => {
       } else {
         startDateTime = now;
       }
-
       whereClause.createdAt = {
         gte: startDateTime,
         lte: endDateTime,
@@ -94,12 +123,6 @@ export const getJobsService = async (query: GetJobsQuery) => {
 
     const jobs = await prisma.job.findMany({
       where: whereClause,
-      ...(take !== -1
-        ? {
-            skip: (page - 1) * take,
-            take: take,
-          }
-        : {}),
       orderBy: {
         [sortBy]: sortOrder,
       },
@@ -117,6 +140,8 @@ export const getJobsService = async (query: GetJobsQuery) => {
           select: {
             address: true,
             postalCode: true,
+            latitude: true,
+            longitude: true,
             regency: {
               select: {
                 id: true,
@@ -134,16 +159,35 @@ export const getJobsService = async (query: GetJobsQuery) => {
       },
     });
 
-    const count = await prisma.job.count({
-      where: whereClause,
-    });
+    // Filter and sort jobs by distance if user location is provided
+    let filteredJobs = jobs;
+    if (userLatitude && userLongitude) {
+      filteredJobs = jobs
+        .map((job) => {
+          const jobLatitude = parseFloat(job.companyLocation?.latitude || "0");
+          const jobLongitude = parseFloat(
+            job.companyLocation?.longitude || "0"
+          );
+          const distance = haversineDistance(
+            userLatitude,
+            userLongitude,
+            jobLatitude,
+            jobLongitude
+          );
+          return { ...job, distance };
+        })
+        .filter((job) => job.distance <= maxDistance)
+        .sort((a, b) => a.distance - b.distance);
+    }
+
+    const paginatedJobs = filteredJobs.slice((page - 1) * take, page * take);
 
     return {
-      data: jobs,
+      data: paginatedJobs,
       meta: {
         page: take !== -1 ? page : 1,
-        take: take !== -1 ? take : count,
-        total: count,
+        take: take !== -1 ? take : filteredJobs.length,
+        total: filteredJobs.length,
         searchQuery: search || null,
       },
     };

@@ -15,7 +15,7 @@ export const getJobsController = async (
 ) => {
   try {
     const query = {
-      take: parseInt(req.query.take as string) || 10,
+      take: parseInt(req.query.take as string) || 10, 
       page: parseInt(req.query.page as string) || 1,
       sortBy: (req.query.sortBy as string) || "createdAt",
       sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
@@ -26,9 +26,13 @@ export const getJobsController = async (
       endDate: req.query.endDate as string,
       location: req.query.location as string,
       companyId: parseInt(req.query.companyId as string),
+      userLatitude: parseFloat(req.query.userLatitude as string) || undefined, 
+      userLongitude: parseFloat(req.query.userLongitude as string) || undefined, 
+      maxDistance: parseFloat(req.query.maxDistance as string) || 50,
     };
 
     const result = await getJobsService(query);
+
     res.status(200).send({
       status: "success",
       ...result,
