@@ -18,6 +18,7 @@ import locationRouter from "./routes/location.router";
 import paymentRouter from "./routes/payment.router";
 import questionOptionRouter from "./routes/question-option.router";
 import sampleRouter from "./routes/sample.router";
+import searchRouter from "./routes/search.router";
 import skillAssessmentQuestionRouter from "./routes/skill-assessment-question.router";
 import skillAssessmentUserAnswerRouter from "./routes/skill-assessment-user-answer.router";
 import skillAssessmentRouter from "./routes/skill-assessment.router";
@@ -63,6 +64,7 @@ app.use("/locations", locationRouter);
 app.use("/work-experiences", workExperienceRouter);
 app.use("/companies", companyRouter);
 app.use("/industries", industryRouter);
+app.use("/search", searchRouter);
 
 // middleware error
 app.use(errorMiddleware);

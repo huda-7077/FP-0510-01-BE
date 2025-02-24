@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { updateCompanyProfileService } from "../services/company/update-company-profile.service";
 import { getCompanyProfileService } from "../services/company/get-company-profile.service";
 import { getCompaniesService } from "../services/company/get-companies.service";
+import { getCompanyService } from "../services/company/get-company.service";
 
 export const getCompaniesController = async (
   req: Request,
@@ -10,10 +11,10 @@ export const getCompaniesController = async (
 ) => {
   try {
     const query = {
-      take: parseInt(req.query.take as string) || 10, 
+      take: parseInt(req.query.take as string) || 10,
       page: parseInt(req.query.page as string) || 1,
       sortBy: (req.query.sortBy as string) || "name",
-      sortOrder: (req.query.sortOrder as string) || "asc", 
+      sortOrder: (req.query.sortOrder as string) || "asc",
       search: (req.query.search as string) || "",
       location: (req.query.location as string) || "",
       industry: (req.query.industry as string) || "",
@@ -23,6 +24,22 @@ export const getCompaniesController = async (
     };
 
     const result = await getCompaniesService(query);
+
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCompanyController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const companyId = Number(req.params.id);
+
+    const result = await getCompanyService(companyId);
 
     res.status(200).send(result);
   } catch (error) {

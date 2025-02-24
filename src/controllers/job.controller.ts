@@ -25,6 +25,7 @@ export const getJobsController = async (
       startDate: req.query.startDate as string,
       endDate: req.query.endDate as string,
       location: req.query.location as string,
+      companyId: parseInt(req.query.companyId as string),
     };
 
     const result = await getJobsService(query);

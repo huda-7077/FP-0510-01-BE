@@ -9,6 +9,7 @@ interface GetJobsQuery extends PaginationQueryParams {
   startDate?: string;
   endDate?: string;
   location?: string;
+  companyId?: number;
 }
 
 export const getJobsService = async (query: GetJobsQuery) => {
@@ -24,6 +25,7 @@ export const getJobsService = async (query: GetJobsQuery) => {
       startDate,
       endDate,
       location,
+      companyId,
     } = query;
 
     const whereClause: Prisma.JobWhereInput = {
@@ -33,6 +35,10 @@ export const getJobsService = async (query: GetJobsQuery) => {
         gte: new Date(),
       },
     };
+
+    if (companyId) {
+      whereClause.companyId = companyId;
+    }
 
     if (search) {
       whereClause.OR = [
@@ -86,7 +92,6 @@ export const getJobsService = async (query: GetJobsQuery) => {
       };
     }
 
-    // Fetch jobs with pagination and sorting
     const jobs = await prisma.job.findMany({
       where: whereClause,
       ...(take !== -1
@@ -143,7 +148,6 @@ export const getJobsService = async (query: GetJobsQuery) => {
       },
     };
   } catch (error) {
-    console.error("Error in getJobsService:", error);
     throw error;
   }
 };
