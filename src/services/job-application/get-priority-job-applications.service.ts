@@ -24,7 +24,6 @@ export const getJobApplicationsService = async (
       educationLevel,
     } = query;
 
-    // Fetch the admin user and their associated company
     const user = await prisma.user.findFirst({
       where: {
         id: userId,
@@ -40,48 +39,17 @@ export const getJobApplicationsService = async (
       },
     });
 
-    // Ensure the admin is associated with a company
-    if (!user) {
+    const whereClause: Prisma.JobApplicationWhereInput = {};
+    if (user) {
+      if (!user.companyId) {
+        throw new ApiError("Admin is not associated with any company", 403);
+      }
+      whereClause.job = {
+        companyId: user.companyId,
+      };
+    } else {
       throw new ApiError("User not found", 404);
     }
-    if (!user.companyId) {
-      throw new ApiError("Admin is not associated with any company", 403);
-    }
-
-    // Build the WHERE clause for filtering job applications
-    const whereClause: Prisma.JobApplicationWhereInput = {
-      job: {
-        companyId: user.companyId,
-      },
-      OR: [
-        // Users with an active "PROFESSIONAL" subscription
-        {
-          user: {
-            subscriptions: {
-              some: {
-                status: "ACTIVE", // Subscription must be active
-                expiredDate: {
-                  gt: new Date(), // Subscription must not be expired
-                },
-                payment: {
-                  category: {
-                    name: "PROFESSIONAL", // Subscription category must be "Professional"
-                  },
-                },
-              },
-            },
-          },
-        },
-        // Users without any subscription
-        {
-          user: {
-            subscriptions: {
-              none: {}, // No subscriptions
-            },
-          },
-        },
-      ],
-    };
 
     if (jobId) {
       whereClause.jobId = jobId;
@@ -97,20 +65,11 @@ export const getJobApplicationsService = async (
 
     if (search) {
       whereClause.OR = [
-        ...(whereClause.OR || []),
         { user: { fullName: { contains: search, mode: "insensitive" } } },
       ];
     }
 
-    // Add sorting logic to prioritize users with active "PROFESSIONAL" subscriptions
-    const orderByClause: Prisma.JobApplicationOrderByWithRelationInput[] = [
-      {
-        user: {
-          subscriptions: {
-            _count: "desc", // Sort by the number of active subscriptions (higher count first)
-          },
-        },
-      },
+    const orderByClause: Prisma.JobApplicationOrderByWithRelationInput =
       sortBy === "dateOfBirth"
         ? {
             user: {
@@ -119,8 +78,7 @@ export const getJobApplicationsService = async (
           }
         : {
             [sortBy]: sortOrder as Prisma.SortOrder,
-          },
-    ];
+          };
 
     const jobApplications = await prisma.jobApplication.findMany({
       where: whereClause,
@@ -130,6 +88,8 @@ export const getJobApplicationsService = async (
             take: take || 10,
           }
         : {}),
+      skip: (page - 1) * take,
+      take: take,
       orderBy: orderByClause,
       include: {
         job: {
@@ -154,22 +114,6 @@ export const getJobApplicationsService = async (
               },
             },
             experience: true,
-            subscriptions: {
-              where: {
-                status: "ACTIVE",
-                expiredDate: {
-                  gt: new Date(),
-                },
-                payment: {
-                  category: {
-                    name: "PROFESSIONAL",
-                  },
-                },
-              },
-              select: {
-                id: true, // Select only the ID to check if the subscription exists
-              },
-            },
           },
         },
       },
@@ -180,14 +124,7 @@ export const getJobApplicationsService = async (
     });
 
     return {
-      data: jobApplications.map((application) => ({
-        ...application,
-        user: {
-          ...application.user,
-          hasProfessionalSubscription:
-            application.user.subscriptions.length > 0, // Add a computed field
-        },
-      })),
+      data: jobApplications,
       meta: {
         page: take !== -1 ? page : 1,
         take: take !== -1 ? take : count,

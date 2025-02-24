@@ -11,37 +11,13 @@ export const getSkillAssessmentQuestionsController = async (
 ) => {
   try {
     const slug = req.params.slug;
-    const result = await getSkillAssessmentQuestionsService(slug);
+    const role = res.locals.user.role;
+    const result = await getSkillAssessmentQuestionsService(slug, role);
     res.status(200).send(result);
   } catch (error) {
     next(error);
   }
 };
-
-// export const getSkillAssessmentsController = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     const query = {
-//       take: parseInt(req.query.take as string) || 3,
-//       page: parseInt(req.query.page as string) || 1,
-//       sortBy: (req.query.sortBy as string) || "createdAt",
-//       sortOrder: (req.query.sortOrder as string) || "desc",
-//       search: (req.query.search as string) || "",
-//       status: Object.values(SkillAssessmentStatus).includes(
-//         req.query.status as SkillAssessmentStatus
-//       )
-//         ? (req.query.status as SkillAssessmentStatus)
-//         : undefined,
-//     };
-//     const result = await getSkillAssessmentsService(query);
-//     res.status(200).send(result);
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 
 export const createSkillAssessmentQuestionController = async (
   req: Request,
