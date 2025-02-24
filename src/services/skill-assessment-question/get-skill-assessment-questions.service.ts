@@ -1,8 +1,11 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError } from "../../utils/apiError";
 
-export const getSkillAssessmentQuestionsService = async (slug: string) => {
+export const getSkillAssessmentQuestionsService = async (
+  slug: string,
+  role: UserRole
+) => {
   try {
     const skillAssessment = await prisma.skillAssessment.findUnique({
       where: { slug },
@@ -20,11 +23,30 @@ export const getSkillAssessmentQuestionsService = async (slug: string) => {
       whereClause.skillAssessmentId = skillAssessmentId;
     }
 
+    let selectResult: any = {};
+
+    if (role === "DEVELOPER") {
+      selectResult = {
+        skillAssessmentOptions: true,
+      };
+    } else if (role === "USER") {
+      selectResult = {
+        skillAssessmentOptions: {
+          select: {
+            id: true,
+            skillAssessmentQuestionId: true,
+            option: true,
+            createdAt: true,
+          },
+        },
+      };
+    } else {
+      throw new ApiError("You are not authorized", 403);
+    }
+
     const assessmentQuestion = await prisma.skillAssessmentQuestion.findMany({
       where: whereClause,
-      include: {
-        skillAssessmentOptions: true,
-      },
+      include: selectResult,
     });
 
     return { data: assessmentQuestion };

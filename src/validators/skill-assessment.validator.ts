@@ -41,12 +41,14 @@ export const validateUpdateSkillAssessment = [
     .optional()
     .isNumeric()
     .withMessage("Passing Score must be a number"),
-  body("badgeImage").custom((value, { req }) => {
-    if (!req.files || !req.files.badgeImage) {
-      throw new Error("Badge Image is required");
-    }
-    return true;
-  }),
+  body("badgeImage")
+    .optional()
+    .custom((value, { req }) => {
+      if (!req.files || !req.files.badgeImage) {
+        throw new Error("Badge Image is required");
+      }
+      return true;
+    }),
 
   (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);

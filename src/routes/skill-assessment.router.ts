@@ -3,6 +3,7 @@ import {
   createSkillAssessmentController,
   getSkillAssessmentController,
   getSkillAssessmentsController,
+  getSkillAssessmentsPublicController,
   updateSkillAssessmentController,
   updateSkillAssessmentStatusController,
 } from "../controllers/skill-assessment.controller";
@@ -17,17 +18,18 @@ import {
 
 const router = Router();
 
-router.get(
-  "/",
-  verifyToken,
-  verifyRole(["DEVELOPER", "USER"]),
-  getSkillAssessmentsController
-);
+router.get("/", getSkillAssessmentsPublicController);
 router.get(
   "/:slug",
   verifyToken,
   verifyRole(["DEVELOPER", "USER"]),
   getSkillAssessmentController
+);
+router.get(
+  "/developer/data",
+  verifyToken,
+  verifyRole(["DEVELOPER"]),
+  getSkillAssessmentsController
 );
 router.post(
   "/",
