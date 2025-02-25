@@ -28,7 +28,8 @@ export const getUserAttemptController = async (
 ) => {
   try {
     const id = parseInt(res.locals.user.id);
-    const result = await getUserAttemptService(id);
+    const slug = req.params.slug;
+    const result = await getUserAttemptService(id, slug);
     res.status(200).send(result);
   } catch (error) {
     next(error);

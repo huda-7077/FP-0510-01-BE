@@ -1,44 +1,90 @@
 import { SkillAssessmentUserAttemptStatus } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError } from "../../utils/apiError";
+import { BASE_URL_FE } from "../../config";
 
 export const submitUserAnswersService = async (
   userId: number,
   attemptId: number
 ) => {
   try {
-    const attempt = await prisma.skillAssessmentUserAttempt.findUnique({
-      where: { id: attemptId },
-      include: { skillAssessmentUserAnswer: true },
-    });
+    return await prisma.$transaction(async (tx) => {
+      const attempt = await tx.skillAssessmentUserAttempt.findUnique({
+        where: { id: attemptId },
+        include: { skillAssessmentUserAnswer: true },
+      });
 
-    if (!attempt || attempt.userId !== userId) {
-      throw new ApiError("Invalid attempt", 403);
-    }
+      if (!attempt || attempt.userId !== userId) {
+        throw new ApiError("Invalid attempt", 403);
+      }
 
-    const elapsedTime = Date.now() - new Date(attempt.createdAt).getTime();
-    if (elapsedTime > 30 * 60 * 1000) {
-      throw new ApiError("Time is up, auto-submit will handle it", 400);
-    }
+      const skillAssessment = await tx.skillAssessment.findUnique({
+        where: { id: attempt.skillAssessmentId },
+      });
 
-    const correctAnswers = await prisma.skillAssessmentUserAnswer.count({
-      where: {
-        skillAssessmentUserAttemptId: attemptId,
-        skillAssessmentOption: {
-          isCorrect: true,
+      if (!skillAssessment) {
+        throw new ApiError("Skill assessment not found", 404);
+      }
+
+      const elapsedTime = Date.now() - new Date(attempt.createdAt).getTime();
+      if (elapsedTime > 30 * 60 * 1000) {
+        throw new ApiError("Time is up, auto-submit will handle it", 400);
+      }
+
+      const correctAnswers = await tx.skillAssessmentUserAnswer.count({
+        where: {
+          skillAssessmentUserAttemptId: attemptId,
+          skillAssessmentOption: {
+            isCorrect: true,
+          },
         },
-      },
-    });
+      });
 
-    await prisma.skillAssessmentUserAttempt.update({
-      where: { id: attemptId },
-      data: {
-        correctAnswer: correctAnswers,
-        status: SkillAssessmentUserAttemptStatus.ENDED,
-      },
-    });
+      const score = (correctAnswers / 25) * 100;
 
-    return { message: "Submitted successfully", correctAnswers };
+      if (score >= skillAssessment.passingScore) {
+        const certificate = await tx.certificate.create({
+          data: {
+            userId,
+            skillAssessmentUserAttemptId: attemptId,
+          },
+        });
+
+        const updateCertificate = await tx.certificate.update({
+          where: { id: certificate.id },
+          data: {
+            certificateUrl: `${BASE_URL_FE}/certificates/${skillAssessment.slug}/${certificate.uuid}`,
+          },
+        });
+
+        await tx.userBadge.create({
+          data: {
+            userId,
+            certificateId: updateCertificate.id,
+            badgeName: `${skillAssessment.title} Badge`,
+            badgeImage: skillAssessment.badgeImage,
+            description: `Finished ${skillAssessment.title} assessment and got a certificate`,
+          },
+        });
+
+        await tx.skillAssessmentUserAttempt.update({
+          where: { id: attemptId },
+          data: {
+            isPassed: true,
+          },
+        });
+      }
+
+      await tx.skillAssessmentUserAttempt.update({
+        where: { id: attemptId },
+        data: {
+          correctAnswer: correctAnswers,
+          status: SkillAssessmentUserAttemptStatus.ENDED,
+        },
+      });
+
+      return { message: "Submitted successfully", correctAnswers };
+    });
   } catch (error) {
     throw error;
   }
