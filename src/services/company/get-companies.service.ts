@@ -2,9 +2,22 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { PaginationQueryParams } from "../../types/pagination";
 
+type CompanySortBy = "name" | "establishedYear";
+
+const validateSortOrder = (order: string): Prisma.SortOrder => {
+  if (order === "asc" || order === "desc") {
+    return order;
+  }
+  throw new Error("Invalid sortOrder. Must be 'asc' or 'desc'.");
+};
+
 interface GetCompaniesQuery extends PaginationQueryParams {
   search?: string;
   location?: string;
+  industry?: string;
+  establishedYearMin?: string;
+  establishedYearMax?: string;
+  hasActiveJobs?: string;
 }
 
 export const getCompaniesService = async (query: GetCompaniesQuery) => {
@@ -16,7 +29,17 @@ export const getCompaniesService = async (query: GetCompaniesQuery) => {
       take = 10,
       search,
       location,
+      industry,
+      establishedYearMin,
+      establishedYearMax,
+      hasActiveJobs,
     } = query;
+
+    const validatedSortOrder = validateSortOrder(sortOrder);
+
+    if (!["name", "establishedYear"].includes(sortBy)) {
+      throw new Error("Invalid sortBy field.");
+    }
 
     const whereClause: Prisma.CompanyWhereInput = {
       isDeleted: false,
@@ -42,6 +65,36 @@ export const getCompaniesService = async (query: GetCompaniesQuery) => {
       };
     }
 
+    if (industry) {
+      whereClause.industry = { contains: industry, mode: "insensitive" };
+    }
+
+    if (establishedYearMin || establishedYearMax) {
+      whereClause.establishedYear = {};
+      if (establishedYearMin) {
+        whereClause.establishedYear.gte = parseInt(establishedYearMin, 10);
+      }
+      if (establishedYearMax) {
+        whereClause.establishedYear.lte = parseInt(establishedYearMax, 10);
+      }
+    }
+
+    if (hasActiveJobs === "true") {
+      whereClause.jobs = {
+        some: {
+          isDeleted: false,
+          isPublished: true,
+        },
+      };
+    }
+
+    const orderByClause: Prisma.CompanyOrderByWithRelationInput = {};
+    if (sortBy === "establishedYear") {
+      orderByClause.establishedYear = validatedSortOrder;
+    } else {
+      orderByClause.name = validatedSortOrder; // Default to sorting by name
+    }
+
     const companies = await prisma.company.findMany({
       where: whereClause,
       ...(take !== -1
@@ -50,9 +103,7 @@ export const getCompaniesService = async (query: GetCompaniesQuery) => {
             take: take,
           }
         : {}),
-      orderBy: {
-        [sortBy]: sortOrder,
-      },
+      orderBy: orderByClause,
       include: {
         companyLocations: {
           select: {
@@ -70,18 +121,14 @@ export const getCompaniesService = async (query: GetCompaniesQuery) => {
             },
           },
         },
-        jobs: {
-          where: {
-            isDeleted: false,
-            isPublished: true,
-          },
+        _count: {
           select: {
-            id: true,
-          },
-        },
-        companyReviews: {
-          select: {
-            overallRating: true,
+            jobs: {
+              where: {
+                isDeleted: false,
+                isPublished: true,
+              },
+            },
           },
         },
       },
@@ -91,28 +138,31 @@ export const getCompaniesService = async (query: GetCompaniesQuery) => {
       where: whereClause,
     });
 
-    // Calculate average rating for each company
-    const companiesWithAvgRating = companies.map((company) => {
-      const totalRating = company.companyReviews.reduce(
-        (sum, review) => sum + review.overallRating,
-        0
-      );
-      const avgRating =
-        company.companyReviews.length > 0
-          ? totalRating / company.companyReviews.length
-          : 0;
+    const companyIds = companies.map((company) => company.id);
+    const avgRatings = await prisma.companyReview.groupBy({
+      by: ["companyId"],
+      _avg: {
+        overallRating: true,
+      },
+      where: {
+        companyId: {
+          in: companyIds,
+        },
+      },
+    });
 
+    const formattedCompanies = companies.map((company) => {
+      const avgRating = avgRatings.find((r) => r.companyId === company.id)?._avg
+        .overallRating;
       return {
         ...company,
-        averageRating: Number(avgRating.toFixed(1)),
-        totalJobs: company.jobs.length,
-        companyReviews: undefined, 
-        jobs: undefined,
+        averageRating: avgRating ? Number(avgRating.toFixed(1)) : 0,
+        totalJobs: company._count.jobs,
       };
     });
 
     return {
-      data: companiesWithAvgRating,
+      data: formattedCompanies,
       meta: {
         page: take !== -1 ? page : 1,
         take: take !== -1 ? take : count,

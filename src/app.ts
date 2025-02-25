@@ -10,6 +10,7 @@ import badgeRouter from "./routes/badge.router";
 import certificateRouter from "./routes/certificate.router";
 import companyLocationRouter from "./routes/company-location.router";
 import companyRouter from "./routes/company.router";
+import industryRouter from "./routes/industry.router";
 import interviewRouter from "./routes/interview.router";
 import invoiceRouter from "./routes/invoice.router";
 import jobApplicationRouter from "./routes/job-applicaton.router";
@@ -18,6 +19,7 @@ import locationRouter from "./routes/location.router";
 import paymentRouter from "./routes/payment.router";
 import questionOptionRouter from "./routes/question-option.router";
 import sampleRouter from "./routes/sample.router";
+import searchRouter from "./routes/search.router";
 import skillAssessmentQuestionRouter from "./routes/skill-assessment-question.router";
 import skillAssessmentUserAttemptRouter from "./routes/skill-assessment-user-attempt.router";
 import skillAssessmentRouter from "./routes/skill-assessment.router";
@@ -63,6 +65,8 @@ app.use("/locations", locationRouter);
 app.use("/work-experiences", workExperienceRouter);
 app.use("/companies", companyRouter);
 app.use("/badges", badgeRouter);
+app.use("/industries", industryRouter);
+app.use("/search", searchRouter);
 
 // middleware error
 app.use(errorMiddleware);
