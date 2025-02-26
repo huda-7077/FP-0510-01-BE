@@ -7,6 +7,23 @@ import {
   TimeRange,
 } from "../services/job-application/get-avg-salary-by-position";
 import { getAvgSalaryByProvinceService } from "../services/job-application/get-avg-salary-by-location";
+import { createJobApplicationService } from "../services/job-application/create-job-application.service";
+
+export const createJobApplicationController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const files = req.files as { [fieldName: string]: Express.Multer.File[] };
+    const userId = res.locals.user.id;
+    const result = await createJobApplicationService(userId, req.body, files);
+
+    res.status(201).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const updateJobApplicationController = async (
   req: Request,
