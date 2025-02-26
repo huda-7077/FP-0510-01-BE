@@ -61,22 +61,21 @@ export const getJobApplicationsService = async (
               some: {
                 status: "ACTIVE", // Subscription must be active
                 expiredDate: {
-                  gt: new Date(), // Subscription must not be expired
+                  gt: new Date(),
                 },
                 payment: {
                   category: {
-                    name: "PROFESSIONAL", // Subscription category must be "Professional"
+                    name: "PROFESSIONAL",
                   },
                 },
               },
             },
           },
         },
-        // Users without any subscription
         {
           user: {
             subscriptions: {
-              none: {}, // No subscriptions
+              none: {},
             },
           },
         },
@@ -102,12 +101,11 @@ export const getJobApplicationsService = async (
       ];
     }
 
-    // Add sorting logic to prioritize users with active "PROFESSIONAL" subscriptions
     const orderByClause: Prisma.JobApplicationOrderByWithRelationInput[] = [
       {
         user: {
           subscriptions: {
-            _count: "desc", // Sort by the number of active subscriptions (higher count first)
+            _count: "desc",
           },
         },
       },
@@ -136,6 +134,16 @@ export const getJobApplicationsService = async (
           select: {
             title: true,
             requiresAssessment: true,
+            preTestAssessments: {
+              include: {
+                userPreTestAssessments: {
+                  select: {
+                    userId: true,
+                    score: true,
+                  },
+                },
+              },
+            },
           },
         },
         user: {

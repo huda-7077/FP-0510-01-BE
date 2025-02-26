@@ -1,22 +1,25 @@
 import { Router } from "express";
 import {
   createAssessmentController,
-  deleteAssessmentController,
   getAssessmentController,
-  getAssessmentsController,
   updateAssessmentController,
+  updatePreTestAssessmentStatusController,
 } from "../controllers/assessment.controller";
+import { verifyToken } from "../lib/jwt";
+import { verifyRole } from "../middleware/role.middleware";
 import {
   validateCreateAssessment,
   validateUpdateAssessment,
 } from "../validators/assessment.validator";
-import { verifyToken } from "../lib/jwt";
-import { verifyRole } from "../middleware/role.middleware";
 
 const router = Router();
 
-router.get("/", getAssessmentsController);
-router.get("/:id", getAssessmentController);
+router.get(
+  "/:slug",
+  verifyToken,
+  verifyRole(["ADMIN", "USER"]),
+  getAssessmentController
+);
 router.post(
   "/",
   verifyToken,
@@ -25,17 +28,17 @@ router.post(
   createAssessmentController
 );
 router.patch(
-  "/:id",
+  "/:slug",
   verifyToken,
   verifyRole(["ADMIN"]),
   validateUpdateAssessment,
   updateAssessmentController
 );
-router.delete(
-  "/:id",
+router.patch(
+  "/:slug/status",
   verifyToken,
   verifyRole(["ADMIN"]),
-  deleteAssessmentController
+  updatePreTestAssessmentStatusController
 );
 
 export default router;

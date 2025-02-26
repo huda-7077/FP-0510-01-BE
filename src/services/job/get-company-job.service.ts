@@ -51,10 +51,12 @@ export const getCompanyJobService = async (id: number, userId: number) => {
             industry: true,
           },
         },
-        assessments: {
+        preTestAssessments: {
           select: {
             id: true,
+            slug: true,
             passingScore: true,
+            status: true,
           },
         },
       },

@@ -30,7 +30,7 @@ export const getJobService = async (id: number, companyId?: number) => {
             industry: true,
           },
         },
-        assessments: {
+        preTestAssessments: {
           select: {
             id: true,
             passingScore: true,

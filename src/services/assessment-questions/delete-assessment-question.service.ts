@@ -1,21 +1,28 @@
 import { prisma } from "../../lib/prisma";
+import { ApiError } from "../../utils/apiError";
 
 export const deleteAssessmentQuestionService = async (id: number) => {
   try {
-    const existingAssessmentQuestion =
-      await prisma.assessmentQuestion.findUnique({
-        where: { id },
-      });
+    const existingQuestion = await prisma.preTestAssessmentQuestion.findUnique({
+      where: { id },
+      include: { preTestAssessmentOptions: true },
+    });
 
-    if (!existingAssessmentQuestion) {
-      throw new Error("Assessment Question not found");
+    if (!existingQuestion) {
+      throw new ApiError("Pre test assessment question not found", 404);
     }
 
-    await prisma.assessmentQuestion.delete({
+    await prisma.preTestAssessmentOption.deleteMany({
+      where: { preTestAssessmentQuestionId: id },
+    });
+
+    await prisma.preTestAssessmentQuestion.delete({
       where: { id },
     });
 
-    return { message: `Assessment Question #${id} deleted successfully` };
+    return {
+      message: `Pre test assessment question #${id} deleted successfully`,
+    };
   } catch (error) {
     throw error;
   }

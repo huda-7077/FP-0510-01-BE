@@ -105,73 +105,73 @@ async function sendNotificationSubscription() {
   }
 }
 
-async function updateUserAssessmentStatus() {
-  try {
-    const now = new Date();
-    const oneDayAgo = new Date(now);
-    oneDayAgo.setDate(now.getDate() - 1);
+// async function updateUserAssessmentStatus() {
+//   try {
+//     const now = new Date();
+//     const oneDayAgo = new Date(now);
+//     oneDayAgo.setDate(now.getDate() - 1);
 
-    const result = await prisma.$transaction(async (prisma) => {
-      const updateUserAssessment = await prisma.userAssessment.updateMany({
-        where: {
-          createdAt: { lte: oneDayAgo },
-          status: { notIn: ["EXPIRED", "DONE"] },
-        },
-        data: {
-          status: "EXPIRED",
-        },
-      });
+//     const result = await prisma.$transaction(async (prisma) => {
+//       const updateUserAssessment = await prisma.userAssessment.updateMany({
+//         where: {
+//           createdAt: { lte: oneDayAgo },
+//           status: { notIn: ["EXPIRED", "DONE"] },
+//         },
+//         data: {
+//           status: "EXPIRED",
+//         },
+//       });
 
-      const updateJobApplications = await prisma.jobApplication.updateMany({
-        where: {
-          status: {
-            equals: "IN_REVIEW",
-          },
-        },
-        data: {
-          status: "REJECTED",
-        },
-      });
+//       const updateJobApplications = await prisma.jobApplication.updateMany({
+//         where: {
+//           status: {
+//             equals: "IN_REVIEW",
+//           },
+//         },
+//         data: {
+//           status: "REJECTED",
+//         },
+//       });
 
-      return {
-        userAssessmentCount: updateUserAssessment.count,
-        jobApplicationCount: updateJobApplications.count,
-      };
-    });
+//       return {
+//         userAssessmentCount: updateUserAssessment.count,
+//         jobApplicationCount: updateJobApplications.count,
+//       };
+//     });
 
-    console.log(
-      `Updated ${result.userAssessmentCount} user assessments to EXPIRED`
-    );
-    console.log(
-      `Updated ${result.jobApplicationCount} job applications to REJECTED`
-    );
-  } catch (error) {
-    console.error("Error updating expired payments:", error);
-  }
-}
+//     console.log(
+//       `Updated ${result.userAssessmentCount} user assessments to EXPIRED`
+//     );
+//     console.log(
+//       `Updated ${result.jobApplicationCount} job applications to REJECTED`
+//     );
+//   } catch (error) {
+//     console.error("Error updating expired payments:", error);
+//   }
+// }
 
-async function scheduleJobsBasedOnCreatedAt() {
-  try {
-    const assessments = await prisma.userAssessment.findMany({
-      where: { status: { notIn: ["EXPIRED", "DONE"] } },
-    });
+// async function scheduleJobsBasedOnCreatedAt() {
+//   try {
+//     const assessments = await prisma.userAssessment.findMany({
+//       where: { status: { notIn: ["EXPIRED", "DONE"] } },
+//     });
 
-    assessments.forEach((assessment) => {
-      const createdAt = new Date(assessment.createdAt);
+//     assessments.forEach((assessment) => {
+//       const createdAt = new Date(assessment.createdAt);
 
-      const cronExpression = `${createdAt.getMinutes()} ${createdAt.getHours()} * * *`;
+//       const cronExpression = `${createdAt.getMinutes()} ${createdAt.getHours()} * * *`;
 
-      schedule.scheduleJob(cronExpression, async () => {
-        console.log(
-          `Running scheduled job to update expired user assessment for assessment ID: ${assessment.id}`
-        );
-        await updateUserAssessmentStatus();
-      });
-    });
-  } catch (error) {
-    console.error("Error scheduling jobs:", error);
-  }
-}
+//       schedule.scheduleJob(cronExpression, async () => {
+//         console.log(
+//           `Running scheduled job to update expired user assessment for assessment ID: ${assessment.id}`
+//         );
+//         await updateUserAssessmentStatus();
+//       });
+//     });
+//   } catch (error) {
+//     console.error("Error scheduling jobs:", error);
+//   }
+// }
 
 async function updateJobApplicationStatus() {
   try {
@@ -294,7 +294,7 @@ schedule.scheduleJob("0 0 * * *", async () => {
   await updateJobApplicationStatus();
 });
 
-scheduleJobsBasedOnCreatedAt();
+// scheduleJobsBasedOnCreatedAt();
 
 schedule.scheduleJob("0 0 * * *", async () => {
   await interviewScheduleReminder();
