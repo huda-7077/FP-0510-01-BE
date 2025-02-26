@@ -253,7 +253,7 @@ model Payment {
   paymentMethod          PaymentMethod
   paymentProof           String?
   invoiceUrl             String?
-  duration               Int
+  duration               Int                  @default(1)
   total                  Int
   status                 PaymentStatus
   isRenewal              Boolean              @default(false)
