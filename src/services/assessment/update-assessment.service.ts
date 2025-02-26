@@ -37,7 +37,7 @@ export const updateAssessmentService = async (
         );
       }
     }
-    if (generateSlug && generateSlug === "true") {
+    if (generateSlug) {
       newSlug = await generateSkillAssessmentUniqueSlug(title);
     }
 

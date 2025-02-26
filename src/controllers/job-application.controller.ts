@@ -7,6 +7,7 @@ import {
   TimeRange,
 } from "../services/job-application/get-avg-salary-by-position";
 import { getAvgSalaryByProvinceService } from "../services/job-application/get-avg-salary-by-location";
+import { checkJobApplicationsUserIdService } from "../services/job-application/check-job-applications-user-id.service";
 
 export const updateJobApplicationController = async (
   req: Request,
@@ -41,6 +42,22 @@ export const getJobApplicationsController = async (
     const userId = res.locals.user.id;
 
     const result = await getJobApplicationsService(query, userId);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getJobApplicationsPublicController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const jobId = parseInt(req.query.jobId as string);
+    const userId = res.locals.user.id;
+
+    const result = await checkJobApplicationsUserIdService(jobId, userId);
     res.status(200).send(result);
   } catch (error) {
     next(error);

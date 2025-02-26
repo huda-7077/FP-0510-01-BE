@@ -24,7 +24,6 @@ export const getJobApplicationsService = async (
       educationLevel,
     } = query;
 
-    // Fetch the admin user and their associated company
     const user = await prisma.user.findFirst({
       where: {
         id: userId,
@@ -40,7 +39,6 @@ export const getJobApplicationsService = async (
       },
     });
 
-    // Ensure the admin is associated with a company
     if (!user) {
       throw new ApiError("User not found", 404);
     }
@@ -48,18 +46,16 @@ export const getJobApplicationsService = async (
       throw new ApiError("Admin is not associated with any company", 403);
     }
 
-    // Build the WHERE clause for filtering job applications
     const whereClause: Prisma.JobApplicationWhereInput = {
       job: {
         companyId: user.companyId,
       },
       OR: [
-        // Users with an active "PROFESSIONAL" subscription
         {
           user: {
             subscriptions: {
               some: {
-                status: "ACTIVE", // Subscription must be active
+                status: "ACTIVE",
                 expiredDate: {
                   gt: new Date(),
                 },

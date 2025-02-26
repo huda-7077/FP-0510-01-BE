@@ -18,10 +18,17 @@ export const startSkillAssessmentService = async (
         userId,
         skillAssessmentId: skillAssessment.id,
         createdAt: {
-          gte: new Date(Date.now() - 30 * 60 * 1000),
+          gte: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
         },
       },
+      select: { isPassed: true },
     });
+
+    const isPassed = existingAttempt?.isPassed;
+
+    if (isPassed === true) {
+      throw new ApiError("You already passed this assessment", 400);
+    }
 
     if (existingAttempt) {
       throw new ApiError(

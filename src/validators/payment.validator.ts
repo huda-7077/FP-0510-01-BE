@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 
 export const validateCreatePayment = [
-  body("duration").notEmpty().withMessage("Duration is required").isNumeric(),
   body("category").notEmpty().withMessage("Category is required").isString(),
   body("paymentMethod")
     .isIn(["PAYMENT_MANUAL", "PAYMENT_GATEWAY"])

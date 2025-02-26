@@ -7,6 +7,7 @@ import assessmentRouter from "./routes/assessment.router";
 import assessmentQuestionRouter from "./routes/assessment-question.router";
 import assessmentAssessmentUserAttemptRouter from "./routes/pre-test-assessment-user-attempt.router";
 import authRouter from "./routes/auth.router";
+import badgeRouter from "./routes/badge.router";
 import certificateRouter from "./routes/certificate.router";
 import companyLocationRouter from "./routes/company-location.router";
 import companyRouter from "./routes/company.router";
@@ -61,6 +62,7 @@ app.use("/accounts", accountRouter);
 app.use("/locations", locationRouter);
 app.use("/work-experiences", workExperienceRouter);
 app.use("/companies", companyRouter);
+app.use("/badges", badgeRouter);
 app.use("/industries", industryRouter);
 app.use("/search", searchRouter);
 

@@ -60,6 +60,7 @@ export const updateJobApplicationService = async (
               preTestAssessments: {
                 select: {
                   id: true,
+                  slug: true,
                 },
               },
             },
@@ -96,7 +97,7 @@ export const updateJobApplicationService = async (
           company_name: updatedJobApplication.job.company.name,
           applicant_name: updatedJobApplication.user.fullName,
           company_logo: updatedJobApplication.job.company.logo || undefined,
-          assessment_url: `${BASE_URL_FE}/pre-test-assessment/${updatedJobApplication.job.preTestAssessments[0].id}`,
+          assessment_url: `${BASE_URL_FE}/pre-test-assessment/${updatedJobApplication.job.preTestAssessments[0].slug}`,
         });
       } catch (emailError) {
         console.error("Failed to send assessment reminder email:", emailError);

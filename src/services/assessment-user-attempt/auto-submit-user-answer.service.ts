@@ -17,7 +17,7 @@ export const autoSubmitUserAnswersService = async (
     }
 
     const elapsedTime = Date.now() - new Date(attempt.createdAt).getTime();
-    if (elapsedTime < 30 * 60 * 1000) {
+    if (elapsedTime < 2 * 60 * 60 * 1000) {
       throw new ApiError("Time is not up yet", 400);
     }
 

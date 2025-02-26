@@ -33,6 +33,7 @@ export const getJobService = async (id: number, companyId?: number) => {
         preTestAssessments: {
           select: {
             id: true,
+            slug: true,
             passingScore: true,
           },
         },

@@ -19,17 +19,14 @@ export const startPreTestAssessmentService = async (
           userId,
           preTestAssessmentId: preTestAssessment.id,
           createdAt: {
-            gte: new Date(Date.now() - 30 * 60 * 1000),
+            gte: new Date(Date.now() - 2 * 60 * 60 * 1000),
           },
         },
       }
     );
 
     if (existingAttempt) {
-      throw new ApiError(
-        "You already finished this assessment, try again at a later time",
-        400
-      );
+      throw new ApiError("You already finished this assessment.", 400);
     }
 
     const newAttempt = await prisma.preTestAssessmentUserAttempt.create({

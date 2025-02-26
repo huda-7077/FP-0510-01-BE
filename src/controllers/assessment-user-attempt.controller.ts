@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { getUserScoreService } from "../services/assessment-user-attempt/get-user-score.service";
 import { getUserAttemptService } from "../services/assessment-user-attempt/get-user-attempt.service";
-import { startSkillAssessmentService } from "../services/skill-assessment-user-attempt/start-skill-assessment.service";
+import { startPreTestAssessmentService } from "../services/assessment-user-attempt/start-pre-test-assessment.service";
 import { saveUserAnswerService } from "../services/assessment-user-attempt/save-user-answer.service";
 import { autoSubmitUserAnswersService } from "../services/assessment-user-attempt/auto-submit-user-answer.service";
 import { submitUserAnswersService } from "../services/assessment-user-attempt/submit-user-answer.service";
@@ -35,7 +35,7 @@ export const getUserAttemptController = async (
   }
 };
 
-export const startSkillAssessmentController = async (
+export const startAssessmentController = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -43,7 +43,7 @@ export const startSkillAssessmentController = async (
   try {
     const id = parseInt(res.locals.user.id);
     const slug = req.params.slug;
-    const result = await startSkillAssessmentService(id, slug);
+    const result = await startPreTestAssessmentService(id, slug);
     res.status(200).send(result);
   } catch (error) {
     next(error);

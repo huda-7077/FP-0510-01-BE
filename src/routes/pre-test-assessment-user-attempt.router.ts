@@ -6,7 +6,7 @@ import {
   getUserAttemptController,
   getUserScoreController,
   saveUserAnswerController,
-  startSkillAssessmentController,
+  startAssessmentController,
   submitUserAnswersController,
 } from "../controllers/assessment-user-attempt.controller";
 
@@ -23,7 +23,7 @@ router.post(
   "/:slug",
   verifyToken,
   verifyRole(["USER"]),
-  startSkillAssessmentController
+  startAssessmentController
 );
 router.patch(
   "/:attemptId",

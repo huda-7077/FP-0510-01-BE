@@ -3,6 +3,7 @@ import {
   getAvgSalaryByPositionController,
   getAvgSalaryByProvinceController,
   getJobApplicationsController,
+  getJobApplicationsPublicController,
   getJobApplicationTotalController,
   updateJobApplicationController,
 } from "../controllers/job-application.controller";
@@ -15,6 +16,7 @@ const router = Router();
 //! Don't forget to add the verifyToken later!
 
 router.get("/", verifyToken, getJobApplicationsController);
+router.get("/check-applicant", verifyToken, getJobApplicationsPublicController);
 router.get("/total", getJobApplicationTotalController);
 router.get("/avg-salary/position", getAvgSalaryByPositionController);
 router.get("/avg-salary/province", getAvgSalaryByProvinceController);

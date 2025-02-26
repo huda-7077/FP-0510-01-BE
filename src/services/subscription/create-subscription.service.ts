@@ -62,9 +62,10 @@ export const createSubscriptionServices = async (
               paymentId: existingPayment.id,
               status: SubscriptionStatus.ACTIVE,
               expiredDate: new Date(
-                // expiredDate.getTime() + existingPayment.duration * 30 * 24 * 60 * 60 * 1000
                 expiredDate.getTime() +
                   existingPayment.duration * 30 * 24 * 60 * 60 * 1000
+                // expiredDate.getTime() +
+                //   existingPayment.duration * 30 * 24 * 60 * 60 * 1000
               ),
             },
           });
@@ -75,8 +76,8 @@ export const createSubscriptionServices = async (
               paymentId: existingPayment.id,
               status: SubscriptionStatus.ACTIVE,
               expiredDate: new Date(
-                // Date.now() + existingPayment.duration * 30 * 24 * 60 * 60 * 1000
-                Date.now() + existingPayment.duration * 10 * 60 * 1000
+                Date.now() + existingPayment.duration * 30 * 24 * 60 * 60 * 1000
+                // Date.now() + existingPayment.duration * 10 * 60 * 1000
               ),
             },
           });

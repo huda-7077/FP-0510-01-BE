@@ -156,6 +156,13 @@ export const getJobsService = async (query: GetJobsQuery) => {
             },
           },
         },
+        preTestAssessments: {
+          select: {
+            id: true,
+            slug: true,
+            passingScore: true,
+          },
+        },
       },
     });
 
