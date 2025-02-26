@@ -9,7 +9,6 @@ const PAYMENT_GATEWAY_EXPIRY = 2 * 60 * 60 * 1000;
 const MANUAL_PAYMENT_EXPIRY = 6 * 60 * 60 * 1000;
 
 interface CreatePaymentBody {
-  duration: number;
   category: string;
   paymentMethod: PaymentMethod;
   isRenewal?: boolean;
@@ -19,7 +18,6 @@ const createPaymentRecord = async (
   userId: number,
   subscriptionCategoryId: number,
   paymentMethod: PaymentMethod,
-  duration: number,
   amount: number,
   expiredAt: Date,
   isRenewal?: boolean,
@@ -30,7 +28,6 @@ const createPaymentRecord = async (
       userId,
       subscriptionCategoryId,
       paymentMethod,
-      duration,
       isRenewal,
       total: amount,
       status: PaymentStatus.PENDING,
@@ -78,14 +75,14 @@ export const createPaymentService = async (
   userId: number,
   body: CreatePaymentBody
 ) => {
-  const { duration, category, paymentMethod, isRenewal } = body;
+  const { category, paymentMethod, isRenewal } = body;
 
   const { user, subscriptionCategory } = await validateUserAndCategory(
     userId,
     category
   );
 
-  const amount = subscriptionCategory.price * duration;
+  const amount = subscriptionCategory.price;
 
   try {
     return await prisma.$transaction(async () => {
@@ -94,7 +91,6 @@ export const createPaymentService = async (
           userId,
           subscriptionCategory.id,
           paymentMethod,
-          duration,
           amount,
           new Date(Date.now() + PAYMENT_GATEWAY_EXPIRY),
           isRenewal
@@ -104,7 +100,7 @@ export const createPaymentService = async (
           amount,
           user.email,
           subscriptionCategory.name,
-          duration,
+          1,
           subscriptionCategory.price
         );
 
@@ -121,7 +117,6 @@ export const createPaymentService = async (
           userId,
           subscriptionCategory.id,
           paymentMethod,
-          duration,
           amount,
           new Date(Date.now() + MANUAL_PAYMENT_EXPIRY),
           isRenewal
