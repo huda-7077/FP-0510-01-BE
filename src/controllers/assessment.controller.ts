@@ -25,7 +25,8 @@ export const createAssessmentController = async (
   next: NextFunction
 ) => {
   try {
-    const result = await createAssessmentService(req.body);
+    const companyId = res.locals.user.companyId;
+    const result = await createAssessmentService(req.body, companyId);
     res.status(200).send(result);
   } catch (error) {
     next(error);
@@ -39,7 +40,11 @@ export const updateAssessmentController = async (
 ) => {
   try {
     const slug = req.params.slug;
-    const result = await updateAssessmentService({ ...req.body, slug });
+    const companyId = res.locals.user.companyId;
+    const result = await updateAssessmentService(
+      { ...req.body, slug },
+      companyId
+    );
     res.status(200).send(result);
   } catch (error) {
     next(error);
@@ -53,11 +58,15 @@ export const updatePreTestAssessmentStatusController = async (
 ) => {
   try {
     const { slug } = req.params;
+    const companyId = res.locals.user.companyId;
 
-    const result = await updateAssessmentStatusService({
-      ...req.body,
-      slug,
-    });
+    const result = await updateAssessmentStatusService(
+      {
+        ...req.body,
+        slug,
+      },
+      companyId
+    );
     res.status(200).send(result);
   } catch (error) {
     next(error);

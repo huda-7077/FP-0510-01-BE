@@ -1,10 +1,27 @@
 import { prisma } from "../../lib/prisma";
 import { ApiError } from "../../utils/apiError";
 
-export const deleteAssessmentQuestionService = async (id: number) => {
+export const deleteAssessmentQuestionService = async (
+  id: number,
+  companyId: number
+) => {
   try {
+    const existingPreTestAssessment = await prisma.preTestAssessment.findFirst({
+      where: {
+        job: { companyId },
+        preTestAssessmentQuestions: { some: { id } },
+      },
+    });
+
+    if (!existingPreTestAssessment) {
+      throw new ApiError(
+        "You don't have access to modify this assessment",
+        403
+      );
+    }
+
     const existingQuestion = await prisma.preTestAssessmentQuestion.findUnique({
-      where: { id },
+      where: { id, preTestAssessmentId: existingPreTestAssessment.id },
       include: { preTestAssessmentOptions: true },
     });
 

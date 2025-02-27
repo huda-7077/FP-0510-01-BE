@@ -26,7 +26,9 @@ export const createAssessmentQuestionController = async (
   next: NextFunction
 ) => {
   try {
-    const result = await createAssessmentQuestionService(req.body);
+    const companyId = res.locals.user.companyId;
+
+    const result = await createAssessmentQuestionService(req.body, companyId);
     res.status(200).send(result);
   } catch (error) {
     next(error);
@@ -40,10 +42,14 @@ export const updateAssessmentQuestionController = async (
 ) => {
   try {
     const { id } = req.params;
-    const result = await updateAssessmentQuestionService({
-      id: parseInt(id),
-      ...req.body,
-    });
+    const companyId = res.locals.user.companyId;
+    const result = await updateAssessmentQuestionService(
+      {
+        id: parseInt(id),
+        ...req.body,
+      },
+      companyId
+    );
     res.status(200).send(result);
   } catch (error) {
     next(error);
@@ -57,7 +63,11 @@ export const deleteAssessmentQuestionController = async (
 ) => {
   try {
     const { id } = req.params;
-    const result = await deleteAssessmentQuestionService(parseInt(id));
+    const companyId = res.locals.user.companyId;
+    const result = await deleteAssessmentQuestionService(
+      parseInt(id),
+      companyId
+    );
     res.status(200).send(result);
   } catch (error) {
     next(error);
