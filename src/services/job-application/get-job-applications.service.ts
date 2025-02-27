@@ -92,7 +92,6 @@ export const getJobApplicationsService = async (
 
     if (search) {
       whereClause.OR = [
-        ...(whereClause.OR || []),
         { user: { fullName: { contains: search, mode: "insensitive" } } },
       ];
     }

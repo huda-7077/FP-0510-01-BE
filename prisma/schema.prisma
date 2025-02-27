@@ -297,6 +297,7 @@ model Employee {
   id         Int      @id @default(autoincrement())
   companyId  Int
   userId     Int
+  position   String
   isEmployee Boolean
   createdAt  DateTime @default(now())
   company    Company  @relation(fields: [companyId], references: [id])

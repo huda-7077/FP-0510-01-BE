@@ -20,6 +20,7 @@ import locationRouter from "./routes/location.router";
 import paymentRouter from "./routes/payment.router";
 import sampleRouter from "./routes/sample.router";
 import searchRouter from "./routes/search.router";
+import employeeRouter from "./routes/employee.router";
 import skillAssessmentQuestionRouter from "./routes/skill-assessment-question.router";
 import skillAssessmentUserAttemptRouter from "./routes/skill-assessment-user-attempt.router";
 import skillAssessmentRouter from "./routes/skill-assessment.router";
@@ -65,6 +66,7 @@ app.use("/companies", companyRouter);
 app.use("/badges", badgeRouter);
 app.use("/industries", industryRouter);
 app.use("/search", searchRouter);
+app.use("/employees", employeeRouter);
 
 // middleware error
 app.use(errorMiddleware);
