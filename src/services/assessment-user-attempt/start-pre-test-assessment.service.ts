@@ -7,12 +7,20 @@ export const startPreTestAssessmentService = async (
 ) => {
   try {
     const preTestAssessment = await prisma.preTestAssessment.findUnique({
-      where: { slug },
+      where: {
+        slug,
+        job: {
+          jobApplications: {
+            some: { userId, status: "IN_REVIEW" },
+          },
+        },
+      },
     });
 
     if (!preTestAssessment) {
       throw new ApiError("Skill assessment not found", 404);
     }
+
     const existingAttempt = await prisma.preTestAssessmentUserAttempt.findFirst(
       {
         where: {

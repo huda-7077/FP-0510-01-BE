@@ -8,12 +8,13 @@ interface UpdatePreTestAssessmentBody {
 }
 
 export const updateAssessmentStatusService = async (
-  body: UpdatePreTestAssessmentBody
+  body: UpdatePreTestAssessmentBody,
+  companyId: number
 ) => {
   const { slug, status } = body;
   try {
     const existingAssessment = await prisma.preTestAssessment.findFirst({
-      where: { slug },
+      where: { slug, job: { companyId } },
     });
 
     if (!existingAssessment) {

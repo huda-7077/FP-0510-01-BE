@@ -22,6 +22,10 @@ export const getUserScoreService = async (
         throw new ApiError("Invalid attempt or not found", 403);
       }
 
+      if (attempt.preTestAssessmentUserAnswer.length <= 0) {
+        throw new ApiError("Invalid attempt", 403);
+      }
+
       const correctAnswers = attempt.preTestAssessmentUserAnswer.filter(
         (answer) => answer.preTestAssessmentOption.isCorrect
       ).length;

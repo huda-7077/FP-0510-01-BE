@@ -1,6 +1,9 @@
 import { prisma } from "../../lib/prisma";
 import { ApiError } from "../../utils/apiError";
-import { generateSkillAssessmentUniqueSlug } from "../../utils/slug";
+import {
+  generateAssessmentUniqueSlug,
+  generateSkillAssessmentUniqueSlug,
+} from "../../utils/slug";
 
 interface UpdatePreTestAssessmentBody {
   slug: string;
@@ -11,13 +14,14 @@ interface UpdatePreTestAssessmentBody {
 }
 
 export const updateAssessmentService = async (
-  body: UpdatePreTestAssessmentBody
+  body: UpdatePreTestAssessmentBody,
+  companyId: number
 ) => {
   const { slug, title, passingScore, generateSlug, description } = body;
 
   try {
     const existingAssessment = await prisma.preTestAssessment.findUnique({
-      where: { slug },
+      where: { slug, job: { companyId } },
     });
 
     if (!existingAssessment) {
@@ -30,6 +34,7 @@ export const updateAssessmentService = async (
       const existingTitle = await prisma.skillAssessment.findFirst({
         where: { title },
       });
+
       if (title === existingTitle?.title) {
         throw new ApiError(
           `Skill assessment with title ${title} already exists`,
@@ -37,8 +42,9 @@ export const updateAssessmentService = async (
         );
       }
     }
+
     if (generateSlug) {
-      newSlug = await generateSkillAssessmentUniqueSlug(title);
+      newSlug = await generateAssessmentUniqueSlug(title);
     }
 
     return await prisma.preTestAssessment.update({

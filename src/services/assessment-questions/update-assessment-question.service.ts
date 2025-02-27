@@ -7,14 +7,26 @@ interface UpdatePreTestAssessmentQuestionBody {
   options: { option: string; isCorrect: boolean }[];
 }
 
-export const updateAssessmentQuestionService = async ({
-  id,
-  question,
-  options,
-}: UpdatePreTestAssessmentQuestionBody) => {
+export const updateAssessmentQuestionService = async (
+  { id, question, options }: UpdatePreTestAssessmentQuestionBody,
+  companyId: number
+) => {
   try {
+    const existingPreTestAssessment = await prisma.preTestAssessment.findFirst({
+      where: {
+        job: { companyId },
+        preTestAssessmentQuestions: { some: { id } },
+      },
+    });
+
+    if (!existingPreTestAssessment) {
+      throw new ApiError(
+        "You don't have access to modify this assessment",
+        403
+      );
+    }
     const existingQuestion = await prisma.preTestAssessmentQuestion.findUnique({
-      where: { id },
+      where: { id, preTestAssessmentId: existingPreTestAssessment.id },
       include: { preTestAssessmentOptions: true },
     });
 

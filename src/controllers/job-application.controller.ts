@@ -48,7 +48,7 @@ export const getJobApplicationsController = async (
   }
 };
 
-export const getJobApplicationsPublicController = async (
+export const checkJobApplicationsUserIdController = async (
   req: Request,
   res: Response,
   next: NextFunction

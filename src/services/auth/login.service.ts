@@ -27,6 +27,7 @@ export const loginService = async (email: string, password: string) => {
     const token = sign(
       {
         id: user.id,
+        companyId: user.companyId,
         isVerified: user.isVerified,
         role: user.role,
       },
