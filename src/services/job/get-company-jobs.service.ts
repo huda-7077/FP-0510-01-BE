@@ -95,6 +95,14 @@ export const getCompanyJobsService = async (
             industry: true,
           },
         },
+        preTestAssessments: {
+          select: {
+            id: true,
+            slug: true,
+            passingScore: true,
+            status: true,
+          },
+        },
         companyLocation: {
           select: {
             address: true,

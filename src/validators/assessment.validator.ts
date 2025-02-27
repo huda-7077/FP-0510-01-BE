@@ -13,7 +13,6 @@ export const validateCreateAssessment = [
     .withMessage("Passing Score is required")
     .isNumeric()
     .withMessage("Passing Score must be a number"),
-  body("status").notEmpty().withMessage("Status is required").isString(),
 
   (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);

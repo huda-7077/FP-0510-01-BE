@@ -17,41 +17,42 @@ model Sample {
 }
 
 model User {
-  id                          Int                          @id @default(autoincrement())
-  companyId                   Int?
-  regencyId                   Int?
-  email                       String                       @unique
-  password                    String?
-  role                        UserRole
-  fullName                    String
-  dateOfBirth                 DateTime?
-  gender                      UserGender?
-  educationLevel              String?
-  currentAddress              String?
-  profilePicture              String?
-  phoneNumber                 String?
-  cvUrl                       String?
-  headline                    String?
-  skills                      String[]
-  isVerified                  Boolean
-  isDeleted                   Boolean
-  createdAt                   DateTime                     @default(now())
-  updatedAt                   DateTime                     @updatedAt
-  company                     Company?                     @relation(fields: [companyId], references: [id])
-  regency                     Regency?                     @relation(fields: [regencyId], references: [id])
-  jobApplications             JobApplication[]
-  userBadges                  UserBadge[]
-  companyReviews              CompanyReview[]
-  savedJobs                   SavedJob[]
-  employees                   Employee[]
-  certificates                Certificate[]
-  userAssessments             UserAssessment[]
-  verificationTokens          VerificationToken[]
-  resetPasswordToken          ResetPasswordToken[]
-  payments                    Payment[]
-  subscriptions               Subscription[]
-  experience                  WorkExperience[]
-  skillAssessmentUserAttempts SkillAssessmentUserAttempt[]
+  id                           Int                            @id @default(autoincrement())
+  companyId                    Int?
+  regencyId                    Int?
+  email                        String                         @unique
+  password                     String?
+  role                         UserRole
+  fullName                     String
+  dateOfBirth                  DateTime?
+  gender                       UserGender?
+  educationLevel               String?
+  currentAddress               String?
+  profilePicture               String?
+  phoneNumber                  String?
+  cvUrl                        String?
+  headline                     String?
+  skills                       String[]
+  isVerified                   Boolean
+  isDeleted                    Boolean
+  createdAt                    DateTime                       @default(now())
+  updatedAt                    DateTime                       @updatedAt
+  company                      Company?                       @relation(fields: [companyId], references: [id])
+  regency                      Regency?                       @relation(fields: [regencyId], references: [id])
+  jobApplications              JobApplication[]
+  userBadges                   UserBadge[]
+  companyReviews               CompanyReview[]
+  savedJobs                    SavedJob[]
+  employees                    Employee[]
+  certificates                 Certificate[]
+  userAssessments              UserPreTestAssessment[]
+  verificationTokens           VerificationToken[]
+  resetPasswordToken           ResetPasswordToken[]
+  payments                     Payment[]
+  subscriptions                Subscription[]
+  experience                   WorkExperience[]
+  skillAssessmentUserAttempts  SkillAssessmentUserAttempt[]
+  PreTestAssessmentUserAttempt PreTestAssessmentUserAttempt[]
 
   @@map("users")
 }
@@ -155,7 +156,7 @@ model Regency {
 }
 
 model Job {
-  id                  Int              @id @default(autoincrement())
+  id                  Int                 @id @default(autoincrement())
   companyId           Int
   title               String
   description         String
@@ -168,13 +169,13 @@ model Job {
   requiresAssessment  Boolean
   isDeleted           Boolean
   companyLocationId   Int
-  companyLocation     CompanyLocation  @relation(fields: [companyLocationId], references: [id])
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  company             Company          @relation(fields: [companyId], references: [id])
+  companyLocation     CompanyLocation     @relation(fields: [companyLocationId], references: [id])
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  company             Company             @relation(fields: [companyId], references: [id])
   jobApplications     JobApplication[]
   savedJobs           SavedJob[]
-  assessments         Assessment[]
+  preTestAssessments  PreTestAssessment[]
 
   @@map("jobs")
 }
@@ -404,56 +405,86 @@ model UserBadge {
   @@map("user_badges")
 }
 
-model UserAssessment {
-  id           Int                  @id @default(autoincrement())
-  assessmentId Int
-  userId       Int
-  score        Int
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  status       UserAssessmentStatus @default(PENDING)
-  assessment   Assessment           @relation(fields: [assessmentId], references: [id])
-  user         User                 @relation(fields: [userId], references: [id])
+model PreTestAssessment {
+  id                           Int                            @id @default(autoincrement())
+  jobId                        Int                            @unique
+  title                        String
+  slug                         String                         @unique
+  description                  String
+  passingScore                 Int
+  status                       PreTestAssessmentStatus
+  createdAt                    DateTime                       @default(now())
+  updatedAt                    DateTime                       @updatedAt
+  job                          Job                            @relation(fields: [jobId], references: [id])
+  preTestAssessmentQuestions   PreTestAssessmentQuestion[]
+  userPreTestAssessments       UserPreTestAssessment[]
+  PreTestAssessmentUserAttempt PreTestAssessmentUserAttempt[]
 
-  @@map("user_assessments")
+  @@map("pre_test_assessments")
 }
 
-model Assessment {
-  id                  Int                  @id @default(autoincrement())
-  jobId               Int                  @unique
-  title               String
-  description         String
-  passingScore        Int
-  status              AssessmentStatus
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  job                 Job                  @relation(fields: [jobId], references: [id])
-  assessmentQuestions AssessmentQuestion[]
-  userAssessments     UserAssessment[]
+model PreTestAssessmentQuestion {
+  id                          Int                           @id @default(autoincrement())
+  preTestAssessmentId         Int
+  question                    String
+  createdAt                   DateTime                      @default(now())
+  updatedAt                   DateTime                      @updatedAt
+  preTestAssessment           PreTestAssessment             @relation(fields: [preTestAssessmentId], references: [id])
+  preTestAssessmentOptions    PreTestAssessmentOption[]
+  PreTestAssessmentUserAnswer PreTestAssessmentUserAnswer[]
 
-  @@map("assessments")
+  @@map("pre_test_assessment_questions")
 }
 
-model AssessmentQuestion {
-  id                Int                @id @default(autoincrement())
-  assessmentId      Int
-  question          String
-  createdAt         DateTime           @default(now())
-  assessment        Assessment         @relation(fields: [assessmentId], references: [id])
-  assessmentOptions AssessmentOption[]
+model PreTestAssessmentOption {
+  id                          Int                           @id @default(autoincrement())
+  preTestAssessmentQuestionId Int
+  option                      String
+  isCorrect                   Boolean
+  createdAt                   DateTime                      @default(now())
+  preTestAssessmentQuestion   PreTestAssessmentQuestion     @relation(fields: [preTestAssessmentQuestionId], references: [id])
+  PreTestAssessmentUserAnswer PreTestAssessmentUserAnswer[]
 
-  @@map("assessment_questions")
+  @@map("pre_test_assessment_options")
 }
 
-model AssessmentOption {
-  id                 Int                @id @default(autoincrement())
-  questionId         Int
-  option             String
-  isCorrect          Boolean
-  createdAt          DateTime           @default(now())
-  assessmentQuestion AssessmentQuestion @relation(fields: [questionId], references: [id])
+model PreTestAssessmentUserAttempt {
+  id                          Int                                @id @default(autoincrement())
+  userId                      Int
+  preTestAssessmentId         Int
+  correctAnswer               Int?
+  status                      PreTestAssessmentUserAttemptStatus @default(STARTED)
+  createdAt                   DateTime                           @default(now())
+  updatedAt                   DateTime                           @updatedAt
+  user                        User                               @relation(fields: [userId], references: [id])
+  preTestAssessment           PreTestAssessment                  @relation(fields: [preTestAssessmentId], references: [id])
+  preTestAssessmentUserAnswer PreTestAssessmentUserAnswer[]
+}
 
-  @@map("assessment_options")
+model PreTestAssessmentUserAnswer {
+  id                             Int                          @id @default(autoincrement())
+  preTestAssessmentUserAttemptId Int
+  preTestAssessmentQuestionId    Int
+  selectedOptionId               Int
+  createdAt                      DateTime                     @default(now())
+  preTestAssessmentQuestion      PreTestAssessmentQuestion    @relation(fields: [preTestAssessmentQuestionId], references: [id])
+  preTestAssessmentOption        PreTestAssessmentOption      @relation(fields: [selectedOptionId], references: [id])
+  PreTestAssessmentUserAttempt   PreTestAssessmentUserAttempt @relation(fields: [preTestAssessmentUserAttemptId], references: [id])
+
+  @@unique([preTestAssessmentQuestionId, preTestAssessmentUserAttemptId])
+  @@map("pre_test_assessment_user_answers")
+}
+
+model UserPreTestAssessment {
+  id                  Int               @id @default(autoincrement())
+  userId              Int
+  preTestAssessmentId Int
+  score               Int
+  createdAt           DateTime          @default(now())
+  preTestAssessment   PreTestAssessment @relation(fields: [preTestAssessmentId], references: [id])
+  user                User              @relation(fields: [userId], references: [id])
+
+  @@map("user_pre_test_assessments")
 }
 
 enum UserRole {
@@ -503,20 +534,17 @@ enum SkillAssessmentStatus {
   DRAFT
 }
 
-enum AssessmentStatus {
+enum PreTestAssessmentStatus {
   PUBLISHED
   DRAFT
 }
 
-enum UserAssessmentStatus {
-  PENDING
+enum SkillAssessmentUserAttemptStatus {
   STARTED
-  ON_DOING
-  DONE
-  EXPIRED
+  ENDED
 }
 
-enum SkillAssessmentUserAttemptStatus {
+enum PreTestAssessmentUserAttemptStatus {
   STARTED
   ENDED
 }

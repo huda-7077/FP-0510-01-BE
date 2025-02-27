@@ -57,9 +57,10 @@ export const updateJobApplicationService = async (
                   logo: true,
                 },
               },
-              assessments: {
+              preTestAssessments: {
                 select: {
                   id: true,
+                  slug: true,
                 },
               },
             },
@@ -71,28 +72,13 @@ export const updateJobApplicationService = async (
         status === "IN_REVIEW" &&
         updatedJobApplication.job.requiresAssessment
       ) {
-        const assessmentId = updatedJobApplication.job.assessments[0]?.id;
+        const assessmentId =
+          updatedJobApplication.job.preTestAssessments[0]?.id;
         const userId = updatedJobApplication.userId;
 
         if (!assessmentId) {
           throw new Error("No assessment available for this job.");
         }
-
-        const existingUserAssessment = await prisma.userAssessment.findFirst({
-          where: { assessmentId, userId },
-        });
-
-        if (existingUserAssessment) {
-          throw new Error("User assessment already exists.");
-        }
-
-        await prisma.userAssessment.create({
-          data: {
-            assessmentId,
-            userId,
-            score: 0,
-          },
-        });
       }
 
       return { updatedJobApplication };
@@ -111,7 +97,7 @@ export const updateJobApplicationService = async (
           company_name: updatedJobApplication.job.company.name,
           applicant_name: updatedJobApplication.user.fullName,
           company_logo: updatedJobApplication.job.company.logo || undefined,
-          assessment_url: `${BASE_URL_FE}/pre-test-assessment/${updatedJobApplication.job.assessments[0].id}`,
+          assessment_url: `${BASE_URL_FE}/pre-test-assessment/${updatedJobApplication.job.preTestAssessments[0].slug}`,
         });
       } catch (emailError) {
         console.error("Failed to send assessment reminder email:", emailError);
