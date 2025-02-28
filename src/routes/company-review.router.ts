@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createCompanyReviewController,
+  deleteCompanyReviewController,
   getCompanyReviewsController,
 } from "../controllers/company-review.controller";
 import { validateCreateCompanyReview } from "../validators/company-review.validator";
@@ -21,7 +22,7 @@ router.delete(
   "/:id",
   verifyToken,
   verifyRole(["USER"]),
-  createCompanyReviewController
+  deleteCompanyReviewController
 );
 
 export default router;
