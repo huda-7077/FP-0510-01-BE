@@ -7,11 +7,14 @@ interface CreatePreTestAssessmentQuestionBody {
   options: { option: string; isCorrect: boolean }[];
 }
 
-export const createAssessmentQuestionService = async ({
-  preTestAssessmentId,
-  question,
-  options,
-}: CreatePreTestAssessmentQuestionBody) => {
+export const createAssessmentQuestionService = async (
+  {
+    preTestAssessmentId,
+    question,
+    options,
+  }: CreatePreTestAssessmentQuestionBody,
+  companyId: number
+) => {
   try {
     if (options.length !== 4) {
       throw new ApiError("Each question must have exactly 4 options", 400);
@@ -25,8 +28,19 @@ export const createAssessmentQuestionService = async ({
       );
     }
 
+    const existingPreTestAssessment = await prisma.preTestAssessment.findFirst({
+      where: { id: preTestAssessmentId, job: { companyId } },
+    });
+
+    if (!existingPreTestAssessment) {
+      throw new ApiError(
+        "You don't have access to modify this assessment",
+        403
+      );
+    }
+
     const existingQuestionCount = await prisma.preTestAssessmentQuestion.count({
-      where: { preTestAssessmentId },
+      where: { preTestAssessmentId: existingPreTestAssessment.id },
     });
 
     if (existingQuestionCount >= 25) {
@@ -35,7 +49,7 @@ export const createAssessmentQuestionService = async ({
 
     const newQuestion = await prisma.preTestAssessmentQuestion.create({
       data: {
-        preTestAssessmentId,
+        preTestAssessmentId: existingPreTestAssessment.id,
         question,
         preTestAssessmentOptions: {
           create: options,
