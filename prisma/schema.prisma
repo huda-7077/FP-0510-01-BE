@@ -219,7 +219,7 @@ model CompanyReview {
   companyId             Int
   userId                Int
   jobTitle              String
-  salaryRange           String
+  salaryRange           Int
   workCultureRating     Int
   workLifeBalanceRating Int
   facilitiesRating      Int

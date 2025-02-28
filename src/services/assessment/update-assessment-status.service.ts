@@ -42,7 +42,7 @@ export const updateAssessmentStatusService = async (
     });
 
     return {
-      skillAssessment: preTestAssessment,
+      preTestAssessment,
       messages: "Pre test assessment status updated successfully",
     };
   } catch (error) {

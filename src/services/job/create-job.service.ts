@@ -3,21 +3,22 @@ import { cloudinaryUpload } from "../../lib/cloudinary";
 import { prisma } from "../../lib/prisma";
 
 export const createJobService = async (
-  body: Omit<Job, "id" | "createdAt" | "updatedAt" | "tags">,
+  body: Omit<Job, "id" | "createdAt" | "updatedAt" | "tags" | "companyId">,
   tags: string,
+  companyId: number,
   bannerImageFile?: Express.Multer.File
 ) => {
   try {
-    const { title, companyId, companyLocationId, applicationDeadline } = body;
+    const { title, companyLocationId, applicationDeadline } = body;
 
-    if (!title || !companyId || !companyLocationId || !applicationDeadline) {
+    if (!title || !companyLocationId || !applicationDeadline) {
       throw new Error(
         "Missing required fields: title, companyId, companyLocationId, or applicationDeadline."
       );
     }
 
     const existingJob = await prisma.job.findFirst({
-      where: { title, companyId: Number(companyId), isDeleted: false },
+      where: { title, companyId, isDeleted: false },
     });
 
     if (existingJob) {
@@ -47,7 +48,7 @@ export const createJobService = async (
         tags: parsedTags,
         bannerImage: bannerImageUrl,
         salary: body.salary ? Number(body.salary) : null,
-        companyId: Number(companyId),
+        companyId,
         companyLocationId: Number(companyLocationId),
         applicationDeadline: new Date(applicationDeadline),
         isPublished:

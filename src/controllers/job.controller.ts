@@ -20,7 +20,7 @@ export const getJobsController = async (
 ) => {
   try {
     const query = {
-      take: parseInt(req.query.take as string) || 10, 
+      take: parseInt(req.query.take as string) || 10,
       page: parseInt(req.query.page as string) || 1,
       sortBy: (req.query.sortBy as string) || "createdAt",
       sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
@@ -31,8 +31,8 @@ export const getJobsController = async (
       endDate: req.query.endDate as string,
       location: req.query.location as string,
       companyId: parseInt(req.query.companyId as string),
-      userLatitude: parseFloat(req.query.userLatitude as string) || undefined, 
-      userLongitude: parseFloat(req.query.userLongitude as string) || undefined, 
+      userLatitude: parseFloat(req.query.userLatitude as string) || undefined,
+      userLongitude: parseFloat(req.query.userLongitude as string) || undefined,
       maxDistance: parseFloat(req.query.maxDistance as string) || 50,
     };
 
@@ -144,8 +144,14 @@ export const createJobController = async (
   try {
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const bannerImage = files?.bannerImage?.[0];
+    const companyId = res.locals.user.companyId;
 
-    const result = await createJobService(req.body, req.body.tags, bannerImage);
+    const result = await createJobService(
+      req.body,
+      req.body.tags,
+      companyId,
+      bannerImage
+    );
     res.status(201).send(result);
   } catch (error) {
     next(error);
@@ -161,11 +167,13 @@ export const updateJobController = async (
     const { id } = req.params;
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const bannerImage = files?.bannerImage?.[0];
+    const companyId = res.locals.user.companyId;
 
     const result = await updateJobService(
       Number(id),
       req.body,
       req.body.tags,
+      companyId,
       bannerImage
     );
     res.status(201).send(result);

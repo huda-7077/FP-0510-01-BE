@@ -41,9 +41,9 @@ export const getAvgSalaryByProvinceService = async (timeRange: TimeRange) => {
     >`
       SELECT 
         p.province AS province,
-        AVG(ja."expectedSalary") AS "avgSalary"
+        AVG(cr."salaryRange") AS "avgSalary"
       FROM 
-        job_applications ja
+        company_reviews cr
       LEFT JOIN
         users u ON "userId" = u.id
       LEFT JOIN 
@@ -56,7 +56,7 @@ export const getAvgSalaryByProvinceService = async (timeRange: TimeRange) => {
         p.province IS NOT NULL
         ${
           startDate
-            ? Prisma.sql`AND ja."createdAt" >= ${startDate}`
+            ? Prisma.sql`AND cr."createdAt" >= ${startDate}`
             : Prisma.empty
         }
       GROUP BY 

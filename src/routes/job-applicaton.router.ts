@@ -27,7 +27,7 @@ router.get("/avg-salary/province", getAvgSalaryByProvinceController);
 router.patch(
   "/:id",
   verifyToken,
-  verifyRole(["ADMIN"]),
+  verifyRole(["ADMIN", "USER"]),
   validateUpdateJobApplication,
   updateJobApplicationController
 );

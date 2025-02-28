@@ -46,21 +46,17 @@ export const getAvgSalaryByPositionService = async (timeRange: TimeRange) => {
       { position: string; avgSalary: number }[]
     >`
       SELECT
-        j.category AS position,
-        AVG(ja."expectedSalary") AS "avgSalary"
+        cr."jobTitle" AS position,
+        AVG(cr."salaryRange") AS "avgSalary"
       FROM 
-        job_applications ja
-      LEFT JOIN 
-        jobs j ON ja."jobId" = j.id
-      WHERE 
-        j."isDeleted" = FALSE
+        company_reviews cr
         ${
           startDate
-            ? Prisma.sql`AND ja."createdAt" >= ${startDate}`
+            ? Prisma.sql`WHERE cr."createdAt" >= ${startDate}`
             : Prisma.empty
         }
       GROUP BY 
-        j.category
+        cr."jobTitle"
       ORDER BY 
         "avgSalary" DESC
       LIMIT 10

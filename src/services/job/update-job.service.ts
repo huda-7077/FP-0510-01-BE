@@ -5,22 +5,24 @@ import { cloudinaryUpload } from "../../lib/cloudinary";
 
 export const updateJobService = async (
   id: number,
-  body: Omit<Job, "id" | "createdAt" | "updatedAt" | "tags">,
+  body: Omit<Job, "id" | "createdAt" | "updatedAt" | "tags" | "companyId">,
   tags: string,
+  companyId: number,
   bannerImageFile?: Express.Multer.File
 ) => {
   try {
-    const { companyId, companyLocationId, applicationDeadline } = body;
+    const { companyLocationId, applicationDeadline } = body;
 
     const existingJob = await prisma.job.findUnique({
-      where: { id, isDeleted: false },
+      where: { id, isDeleted: false, companyId },
     });
 
     if (!existingJob) {
-      throw new ApiError(`Job with id ${id} not found`, 404);
+      throw new ApiError(`Job with not found or you don't have access`, 404);
     }
 
     let bannerImageUrl: string | undefined;
+
     if (bannerImageFile) {
       try {
         const { secure_url } = await cloudinaryUpload(bannerImageFile);

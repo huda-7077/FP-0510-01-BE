@@ -5,14 +5,15 @@ import { BASE_URL_FE } from "../../config";
 import sendApplicationAcceptanceEmail from "../../lib/handlebars/sendApplicationAcceptanceEmail";
 import sendApplicationRejectionEmail from "../../lib/handlebars/sendApplicationRejectionEmail";
 
-interface UpdateJobApplicationBody {
+interface UpdateJobApplicationCompanyBody {
   status?: JobApplication["status"];
   notes?: string;
 }
 
-export const updateJobApplicationService = async (
-  body: UpdateJobApplicationBody,
-  id: number
+export const updateJobApplicationCompanyService = async (
+  body: UpdateJobApplicationCompanyBody,
+  id: number,
+  companyId: number
 ) => {
   try {
     if (!id || id <= 0) {
@@ -23,11 +24,11 @@ export const updateJobApplicationService = async (
 
     const result = await prisma.$transaction(async (prisma) => {
       const existingJobApplication = await prisma.jobApplication.findUnique({
-        where: { id },
+        where: { id, job: { companyId } },
       });
 
       if (!existingJobApplication) {
-        throw new Error("Job application not found.");
+        throw new Error("Job application not found or you don't have access.");
       }
 
       const updatedJobApplication = await prisma.jobApplication.update({

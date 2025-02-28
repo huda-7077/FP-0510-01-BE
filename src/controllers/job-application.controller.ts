@@ -8,6 +8,7 @@ import {
 } from "../services/job-application/get-avg-salary-by-position";
 import { getAvgSalaryByProvinceService } from "../services/job-application/get-avg-salary-by-location";
 import { checkJobApplicationsUserIdService } from "../services/job-application/check-job-applications-user-id.service";
+import { updateJobApplicationCompanyService } from "../services/job-application/update-job-application-company.service";
 
 export const updateJobApplicationController = async (
   req: Request,
@@ -16,8 +17,20 @@ export const updateJobApplicationController = async (
 ) => {
   try {
     const { id } = req.params;
-    const result = await updateJobApplicationService(req.body, parseInt(id));
-    res.status(200).send(result);
+    const role = res.locals.user.role;
+
+    if (role === "ADMIN") {
+      const companyId = res.locals.user.companyId;
+      const result = await updateJobApplicationCompanyService(
+        req.body,
+        parseInt(id),
+        companyId
+      );
+      res.status(200).send(result);
+    } else if (role === "USER") {
+      const result = await updateJobApplicationService(req.body, parseInt(id));
+      res.status(200).send(result);
+    }
   } catch (error) {
     next(error);
   }
