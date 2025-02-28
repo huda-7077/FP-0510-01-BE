@@ -1,12 +1,13 @@
 import { Router } from "express";
-import { verifyToken } from "../lib/jwt";
-import { verifyRole } from "../middleware/role.middleware";
 import {
   checkEmployeeExistanceController,
+  getCompanyEmployeeController,
   getEmployeesController,
   registerEmployeeController,
   updateEmployeeController,
 } from "../controllers/employee.controller";
+import { verifyToken } from "../lib/jwt";
+import { verifyRole } from "../middleware/role.middleware";
 import {
   validateRegisterEmployee,
   validateUpdateEmployee,
@@ -23,6 +24,12 @@ router.post(
 );
 router.get("/", verifyToken, verifyRole(["ADMIN"]), getEmployeesController);
 router.get("/check-employee", verifyToken, checkEmployeeExistanceController);
+router.get(
+  "/check-employee/:companyId",
+  verifyToken,
+  verifyRole(["USER"]),
+  getCompanyEmployeeController
+);
 router.patch(
   "/:id",
   verifyToken,

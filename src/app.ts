@@ -10,6 +10,7 @@ import authRouter from "./routes/auth.router";
 import badgeRouter from "./routes/badge.router";
 import certificateRouter from "./routes/certificate.router";
 import companyLocationRouter from "./routes/company-location.router";
+import companyReviewRouter from "./routes/company-review.router";
 import companyRouter from "./routes/company.router";
 import industryRouter from "./routes/industry.router";
 import interviewRouter from "./routes/interview.router";
@@ -71,6 +72,7 @@ app.use("/companies", companyRouter);
 app.use("/badges", badgeRouter);
 app.use("/industries", industryRouter);
 app.use("/search", searchRouter);
+app.use("/reviews", companyReviewRouter);
 app.use("/employees", employeeRouter);
 
 // middleware error
