@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import { registerEmployeeService } from "../services/employee/register-employee.service";
 import { checkEmployeeExistanceService } from "../services/employee/check-employee-existance.service";
+import { getCompanyEmployeeService } from "../services/employee/get-company-employee.service";
 import { getEmployeesService } from "../services/employee/get-employees.service";
+import { registerEmployeeService } from "../services/employee/register-employee.service";
 import { updateEmployeeService } from "../services/employee/update-employee.service";
 
 export const registerEmployeeController = async (
@@ -28,6 +29,22 @@ export const checkEmployeeExistanceController = async (
     const companyId = res.locals.user.companyId;
 
     const result = await checkEmployeeExistanceService(companyId, userId);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCompanyEmployeeController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = res.locals.user.id;
+    const companyId = Number(req.params.companyId);
+
+    const result = await getCompanyEmployeeService(companyId, userId);
     res.status(200).send(result);
   } catch (error) {
     next(error);

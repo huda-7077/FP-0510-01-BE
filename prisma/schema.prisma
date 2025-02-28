@@ -218,13 +218,12 @@ model CompanyReview {
   id                    Int      @id @default(autoincrement())
   companyId             Int
   userId                Int
-  jobTitle              String
-  salaryRange           String
+  salaryEstimate        Int
   workCultureRating     Int
   workLifeBalanceRating Int
   facilitiesRating      Int
   careerGrowthRating    Int
-  overallRating         Int
+  overallRating         Decimal
   comment               String
   createdAt             DateTime @default(now())
   company               Company  @relation(fields: [companyId], references: [id])
