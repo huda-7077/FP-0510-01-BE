@@ -1,7 +1,16 @@
 import { prisma } from "../../lib/prisma";
+import { redisClient } from "../../lib/redis";
 
 export const getUserCountByGenderService = async () => {
   try {
+    const cachedUserGenderCountData = await redisClient.get(
+      "userGenderCountData"
+    );
+
+    if (cachedUserGenderCountData) {
+      return JSON.parse(cachedUserGenderCountData);
+    }
+
     const users = await prisma.user.findMany({
       where: { isDeleted: false, role: "USER" },
       select: {
@@ -25,6 +34,12 @@ export const getUserCountByGenderService = async () => {
         }
       }
     });
+
+    await redisClient.setEx(
+      "userGenderCountData",
+      3600,
+      JSON.stringify({ data: genderCount })
+    );
 
     return { data: genderCount };
   } catch (error) {

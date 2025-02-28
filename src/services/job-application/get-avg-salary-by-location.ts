@@ -1,9 +1,18 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { TimeRange } from "./get-avg-salary-by-position";
+import { redisClient } from "../../lib/redis";
 
 export const getAvgSalaryByProvinceService = async (timeRange: TimeRange) => {
   try {
+    const redisKey = `avgSalaryByProvinceData:${timeRange}`;
+
+    const cachedAvgSalaryByProvinceData = await redisClient.get(redisKey);
+
+    if (cachedAvgSalaryByProvinceData) {
+      return JSON.parse(cachedAvgSalaryByProvinceData);
+    }
+
     let startDate: Date | undefined;
     const now = new Date();
 
@@ -61,6 +70,8 @@ export const getAvgSalaryByProvinceService = async (timeRange: TimeRange) => {
       province: item.province || "Unknown",
       avgSalary: Number(item.avgSalary),
     }));
+
+    await redisClient.setEx(redisKey, 3600, JSON.stringify({ data: result }));
 
     return { data: result };
   } catch (error) {

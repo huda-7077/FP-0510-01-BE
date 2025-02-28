@@ -1,7 +1,14 @@
 import { prisma } from "../../lib/prisma";
+import { redisClient } from "../../lib/redis";
 
 export const getUsersCountByAgeRangesService = async () => {
   try {
+    const cachedAgeRangesData = await redisClient.get("ageRangesData");
+
+    if (cachedAgeRangesData) {
+      return JSON.parse(cachedAgeRangesData);
+    }
+
     const users = await prisma.user.findMany({
       where: { isDeleted: false, role: "USER" },
       select: {
@@ -23,7 +30,6 @@ export const getUsersCountByAgeRangesService = async () => {
       return age;
     };
 
-    // Initialize age range counters
     const ageRanges = [
       { age: "<17", userAges: 0 },
       { age: "18-24", userAges: 0 },
@@ -34,7 +40,6 @@ export const getUsersCountByAgeRangesService = async () => {
       { age: "65+", userAges: 0 },
     ];
 
-    // Categorize users into age ranges
     users.forEach((user) => {
       if (user.dateOfBirth) {
         const age = calculateAge(user.dateOfBirth);
@@ -56,6 +61,12 @@ export const getUsersCountByAgeRangesService = async () => {
         }
       }
     });
+
+    await redisClient.setEx(
+      "ageRangesData",
+      3600,
+      JSON.stringify({ data: ageRanges })
+    );
 
     return { data: ageRanges };
   } catch (error) {

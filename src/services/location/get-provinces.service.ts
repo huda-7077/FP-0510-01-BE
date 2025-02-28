@@ -1,11 +1,18 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
+import { redisClient } from "../../lib/redis";
 
 export const getProvincesService = async (
   regencyId?: number,
   search?: string
 ) => {
   try {
+    const cachedProvinceData = await redisClient.get("provinceData");
+
+    if (cachedProvinceData) {
+      return JSON.parse(cachedProvinceData);
+    }
+
     const whereClause: Prisma.ProvinceWhereInput = {};
 
     if (regencyId) {
@@ -29,6 +36,8 @@ export const getProvincesService = async (
         province: "asc",
       },
     });
+
+    await redisClient.setEx("provinceData", 3600, JSON.stringify(provinces));
 
     return provinces;
   } catch (error) {

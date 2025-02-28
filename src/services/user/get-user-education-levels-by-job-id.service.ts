@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma";
+import { redisClient } from "../../lib/redis";
 
 interface GetUsersEducationLevelByJobIdQuery {
   jobId: number;
