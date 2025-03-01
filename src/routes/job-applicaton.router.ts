@@ -3,8 +3,10 @@ import {
   createJobApplicationController,
   getAvgSalaryByPositionController,
   getAvgSalaryByProvinceController,
+  getJobApplicationController,
   getJobApplicationsController,
   getJobApplicationTotalController,
+  getUserJobApplicationsController,
   updateJobApplicationController,
 } from "../controllers/job-application.controller";
 import {
@@ -19,6 +21,18 @@ const router = Router();
 
 //! Don't forget to add the verifyToken later!
 
+router.get(
+  "/user",
+  verifyToken,
+  verifyRole(["USER"]),
+  getUserJobApplicationsController
+);
+router.get(
+  "/:id",
+  verifyToken,
+  verifyRole(["USER"]),
+  getJobApplicationController
+);
 router.get("/", verifyToken, getJobApplicationsController);
 router.get("/total", getJobApplicationTotalController);
 router.get("/avg-salary/position", getAvgSalaryByPositionController);

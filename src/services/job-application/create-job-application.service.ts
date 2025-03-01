@@ -6,8 +6,7 @@ import { ApplicationStatus } from "@prisma/client";
 interface CreateJobApplicationBody {
   jobId: number;
   expectedSalary: number;
-  notes?: string;
-  useExistingCV?: boolean;
+  useExistingCV?: string;
 }
 
 const checkUserEligibility = (user: any) => {
@@ -21,7 +20,6 @@ const checkUserEligibility = (user: any) => {
   const requiredFields = [
     "email",
     "fullName",
-    "profilePicture",
     "currentAddress",
     "phoneNumber",
     "dateOfBirth",
@@ -50,8 +48,9 @@ export const createJobApplicationService = async (
   }
 ) => {
   try {
-    const { expectedSalary, notes, useExistingCV } = body;
+    const { expectedSalary } = body;
     const jobId = Number(body.jobId);
+    const useExistingCV = body.useExistingCV === "true";
 
     // Get user and check profile completeness
     const user = await prisma.user.findUnique({
@@ -98,7 +97,7 @@ export const createJobApplicationService = async (
     // Handle CV file
     let cvFileUrl: string;
 
-    if (useExistingCV) {
+    if (useExistingCV === true) {
       if (!user.cvUrl) {
         throw new ApiError("No existing CV found in your profile", 400);
       }
@@ -135,7 +134,6 @@ export const createJobApplicationService = async (
         cvFile: cvFileUrl,
         attachment: attachmentUrl,
         expectedSalary: Number(expectedSalary),
-        notes,
         status: ApplicationStatus.PENDING,
       },
       include: {

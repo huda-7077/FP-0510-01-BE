@@ -12,7 +12,6 @@ export const validateCreateJobApplication = [
     .withMessage("Expected salary is required")
     .isInt()
     .withMessage("Expected salary must be a number"),
-  body("notes").optional().isString().withMessage("Notes must be a string"),
   body("useExistingCV")
     .optional()
     .isBoolean()
