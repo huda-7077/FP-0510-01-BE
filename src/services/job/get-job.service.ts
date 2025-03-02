@@ -1,9 +1,9 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 
-export const getJobService = async (id: number, companyId?: number) => {
+export const getJobService = async (slug: string, companyId?: number) => {
   try {
-    const whereClause: Prisma.JobWhereUniqueInput = { id, isDeleted: false };
+    const whereClause: Prisma.JobWhereUniqueInput = { slug, isDeleted: false };
 
     if (companyId) {
       whereClause.companyId = companyId;

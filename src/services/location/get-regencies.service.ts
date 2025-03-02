@@ -36,7 +36,11 @@ export const getRegenciesService = async (
       },
     });
 
-    await redisClient.setEx("regencyData", 3600, JSON.stringify(regencies));
+    await redisClient.setEx(
+      "regencyData",
+      24 * 3600,
+      JSON.stringify(regencies)
+    );
 
     return regencies;
   } catch (error) {

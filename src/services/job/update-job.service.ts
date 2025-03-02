@@ -2,16 +2,18 @@ import { Job } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError } from "../../utils/apiError";
 import { cloudinaryUpload } from "../../lib/cloudinary";
+import { generateJobUniqueSlug } from "../../utils/slug";
 
 export const updateJobService = async (
   id: number,
   body: Omit<Job, "id" | "createdAt" | "updatedAt" | "tags" | "companyId">,
   tags: string,
   companyId: number,
+  generateSlug: string,
   bannerImageFile?: Express.Multer.File
 ) => {
   try {
-    const { companyLocationId, applicationDeadline } = body;
+    const { title, slug, companyLocationId, applicationDeadline } = body;
 
     const existingJob = await prisma.job.findUnique({
       where: { id, isDeleted: false, companyId },
@@ -19,6 +21,21 @@ export const updateJobService = async (
 
     if (!existingJob) {
       throw new ApiError(`Job with not found or you don't have access`, 404);
+    }
+
+    let newSlug = slug;
+
+    if (title && title !== existingJob.title) {
+      const existingTitle = await prisma.job.findFirst({
+        where: { title },
+      });
+      if (title === existingTitle?.title) {
+        throw new ApiError(`Job with title: ${title} already exists`, 409);
+      }
+    }
+
+    if (generateSlug && generateSlug === "true") {
+      newSlug = await generateJobUniqueSlug(title);
     }
 
     let bannerImageUrl: string | undefined;
@@ -43,7 +60,10 @@ export const updateJobService = async (
     const updatedJob = await prisma.job.update({
       where: { id },
       data: {
-        ...body,
+        title: body.title,
+        slug: newSlug,
+        description: body.description,
+        category: body.category,
         tags: parsedTags,
         bannerImage: bannerImageUrl,
         salary: body.salary ? Number(body.salary) : null,

@@ -50,6 +50,8 @@ export const getJobApplicationsController = async (
       search: (req.query.search as string) || "",
       jobId: parseInt(req.query.jobId as string) || 0,
       educationLevel: (req.query.educationLevel as string) || "",
+      maxExpectedSalary: parseInt(req.query.maxExpectedSalary as string) || 0,
+      minExpectedSalary: parseInt(req.query.minExpectedSalary as string) || 0,
     };
 
     const userId = res.locals.user.id;

@@ -1,9 +1,13 @@
 import { Job } from "@prisma/client";
 import { cloudinaryUpload } from "../../lib/cloudinary";
 import { prisma } from "../../lib/prisma";
+import { generateJobUniqueSlug } from "../../utils/slug";
 
 export const createJobService = async (
-  body: Omit<Job, "id" | "createdAt" | "updatedAt" | "tags" | "companyId">,
+  body: Omit<
+    Job,
+    "id" | "createdAt" | "updatedAt" | "tags" | "companyId" | "slug"
+  >,
   tags: string,
   companyId: number,
   bannerImageFile?: Express.Multer.File
@@ -25,6 +29,8 @@ export const createJobService = async (
       throw new Error("A job with this title already exists for the company.");
     }
 
+    const slug = await generateJobUniqueSlug(title);
+
     let bannerImageUrl: string | undefined;
     if (bannerImageFile) {
       try {
@@ -45,6 +51,7 @@ export const createJobService = async (
     const createdJob = await prisma.job.create({
       data: {
         ...body,
+        slug,
         tags: parsedTags,
         bannerImage: bannerImageUrl,
         salary: body.salary ? Number(body.salary) : null,

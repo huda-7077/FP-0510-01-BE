@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import { getJobsService } from "../services/job/get-jobs.service";
-import { getJobCategoriesService } from "../services/job/get-jobs-categories.service";
 import { getJobService } from "../services/job/get-job.service";
 import { createJobService } from "../services/job/create-job.service";
 import { updateJobService } from "../services/job/update-job.service";
@@ -80,9 +79,9 @@ export const getJobController = async (
   next: NextFunction
 ) => {
   try {
-    const { id } = req.params;
+    const { slug } = req.params;
     const companyId = parseInt(req.query.companyId as string);
-    const result = await getJobService(parseInt(id), companyId);
+    const result = await getJobService(slug, companyId);
     res.status(200).send(result);
   } catch (error) {
     next(error);
@@ -98,23 +97,6 @@ export const getCompanyJobController = async (
     const { id } = req.params;
     const userId = res.locals.user.id;
     const result = await getCompanyJobService(parseInt(id), userId);
-    res.status(200).send(result);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getJobCategoriesController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const query = {
-      companyId: parseInt(req.query.companyId as string) || 0,
-    };
-
-    const result = await getJobCategoriesService(query);
     res.status(200).send(result);
   } catch (error) {
     next(error);
@@ -174,6 +156,7 @@ export const updateJobController = async (
       req.body,
       req.body.tags,
       companyId,
+      req.body.generateSlug,
       bannerImage
     );
     res.status(201).send(result);

@@ -41,7 +41,7 @@ export const getAvgSalaryByProvinceService = async (timeRange: TimeRange) => {
     >`
       SELECT 
         p.province AS province,
-        AVG(cr."salaryRange") AS "avgSalary"
+        AVG(cr."salaryEstimate") AS "avgSalary"
       FROM 
         company_reviews cr
       LEFT JOIN

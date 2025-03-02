@@ -37,7 +37,11 @@ export const getProvincesService = async (
       },
     });
 
-    await redisClient.setEx("provinceData", 3600, JSON.stringify(provinces));
+    await redisClient.setEx(
+      "provinceData",
+      24 * 3600,
+      JSON.stringify(provinces)
+    );
 
     return provinces;
   } catch (error) {
