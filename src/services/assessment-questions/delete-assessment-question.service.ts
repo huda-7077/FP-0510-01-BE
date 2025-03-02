@@ -1,21 +1,45 @@
 import { prisma } from "../../lib/prisma";
+import { ApiError } from "../../utils/apiError";
 
-export const deleteAssessmentQuestionService = async (id: number) => {
+export const deleteAssessmentQuestionService = async (
+  id: number,
+  companyId: number
+) => {
   try {
-    const existingAssessmentQuestion =
-      await prisma.assessmentQuestion.findUnique({
-        where: { id },
-      });
+    const existingPreTestAssessment = await prisma.preTestAssessment.findFirst({
+      where: {
+        job: { companyId },
+        preTestAssessmentQuestions: { some: { id } },
+      },
+    });
 
-    if (!existingAssessmentQuestion) {
-      throw new Error("Assessment Question not found");
+    if (!existingPreTestAssessment) {
+      throw new ApiError(
+        "You don't have access to modify this assessment",
+        403
+      );
     }
 
-    await prisma.assessmentQuestion.delete({
+    const existingQuestion = await prisma.preTestAssessmentQuestion.findUnique({
+      where: { id, preTestAssessmentId: existingPreTestAssessment.id },
+      include: { preTestAssessmentOptions: true },
+    });
+
+    if (!existingQuestion) {
+      throw new ApiError("Pre test assessment question not found", 404);
+    }
+
+    await prisma.preTestAssessmentOption.deleteMany({
+      where: { preTestAssessmentQuestionId: id },
+    });
+
+    await prisma.preTestAssessmentQuestion.delete({
       where: { id },
     });
 
-    return { message: `Assessment Question #${id} deleted successfully` };
+    return {
+      message: `Pre test assessment question #${id} deleted successfully`,
+    };
   } catch (error) {
     throw error;
   }

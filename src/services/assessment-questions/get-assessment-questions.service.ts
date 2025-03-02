@@ -1,29 +1,53 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
-
-interface GetAssessmentQuestionQuery {
-  assessmentId: number;
-}
+import { ApiError } from "../../utils/apiError";
 
 export const getAssessmentQuestionsService = async (
-  query: GetAssessmentQuestionQuery
+  slug: string,
+  role: UserRole
 ) => {
   try {
-    const { assessmentId } = query;
+    const preTestAssessment = await prisma.preTestAssessment.findUnique({
+      where: { slug },
+    });
 
-    const parsedAssessmentId = assessmentId && Number(assessmentId);
-
-    const whereClause: Prisma.AssessmentQuestionWhereInput = {};
-
-    if (parsedAssessmentId) {
-      whereClause.assessmentId = parsedAssessmentId;
+    if (!preTestAssessment) {
+      throw new ApiError("Pre test assessment not found", 404);
     }
 
-    const assessmentQuestion = await prisma.assessmentQuestion.findMany({
+    const preTestAssessmentId = preTestAssessment.id;
+
+    const whereClause: Prisma.PreTestAssessmentQuestionWhereInput = {};
+
+    if (preTestAssessmentId) {
+      whereClause.preTestAssessmentId = preTestAssessmentId;
+    }
+
+    let selectResult: any = {};
+
+    if (role === "ADMIN") {
+      selectResult = {
+        preTestAssessmentOptions: true,
+      };
+    } else if (role === "USER") {
+      selectResult = {
+        preTestAssessmentOptions: {
+          select: {
+            id: true,
+            preTestAssessmentQuestionId: true,
+            option: true,
+            createdAt: true,
+          },
+        },
+      };
+    } else {
+      throw new ApiError("You are not authorized", 403);
+    }
+
+    const assessmentQuestion = await prisma.preTestAssessmentQuestion.findMany({
       where: whereClause,
-      include: {
-        assessmentOptions: true,
-      },
+      orderBy: { createdAt: "asc" },
+      include: selectResult,
     });
 
     return { data: assessmentQuestion };

@@ -12,7 +12,12 @@ import { verifyRole } from "../middleware/role.middleware";
 
 const router = Router();
 
-router.get("/", verifyToken, verifyRole(["USER"]), getUserAttemptController);
+router.get(
+  "/:slug",
+  verifyToken,
+  verifyRole(["USER"]),
+  getUserAttemptController
+);
 router.get(
   "/:attemptId/score",
   verifyToken,

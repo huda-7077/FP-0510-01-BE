@@ -7,6 +7,7 @@ import {
   TimeRange,
 } from "../services/job-application/get-avg-salary-by-position";
 import { getAvgSalaryByProvinceService } from "../services/job-application/get-avg-salary-by-location";
+import { checkJobApplicationsUserIdService } from "../services/job-application/check-job-applications-user-id.service";
 import { createJobApplicationService } from "../services/job-application/create-job-application.service";
 import { getUserJobApplicationsService } from "../services/job-application/get-user-job-applications.service";
 import { getJobApplicationService } from "../services/job-application/get-job-application.service";
@@ -105,6 +106,22 @@ export const getUserJobApplicationsController = async (
       status: "success",
       ...result,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const checkJobApplicationsUserIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const jobId = parseInt(req.query.jobId as string);
+    const userId = res.locals.user.id;
+
+    const result = await checkJobApplicationsUserIdService(jobId, userId);
+    res.status(200).send(result);
   } catch (error) {
     next(error);
   }

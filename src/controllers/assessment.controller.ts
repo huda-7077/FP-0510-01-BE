@@ -1,26 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { createAssessmentService } from "../services/assessment/create-assessment.service";
-import { deleteAssessmentService } from "../services/assessment/delete-assessment.service";
 import { getAssessmentService } from "../services/assessment/get-assessment.service";
-import { getAssessmentsService } from "../services/assessment/get-assessments.service";
+import { updateAssessmentStatusService } from "../services/assessment/update-assessment-status.service";
 import { updateAssessmentService } from "../services/assessment/update-assessment.service";
-
-export const getAssessmentsController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const query = {
-      jobId: parseInt(req.query.jobId as string) || 0,
-    };
-
-    const result = await getAssessmentsService(query);
-    res.status(200).send(result);
-  } catch (error) {
-    next(error);
-  }
-};
 
 export const getAssessmentController = async (
   req: Request,
@@ -28,8 +10,9 @@ export const getAssessmentController = async (
   next: NextFunction
 ) => {
   try {
-    const { id } = req.params;
-    const result = await getAssessmentService(parseInt(id));
+    const slug = req.params.slug;
+    const role = res.locals.user.role;
+    const result = await getAssessmentService(slug, role);
     res.status(200).send(result);
   } catch (error) {
     next(error);
@@ -42,7 +25,8 @@ export const createAssessmentController = async (
   next: NextFunction
 ) => {
   try {
-    const result = await createAssessmentService(req.body);
+    const companyId = res.locals.user.companyId;
+    const result = await createAssessmentService(req.body, companyId);
     res.status(200).send(result);
   } catch (error) {
     next(error);
@@ -55,21 +39,34 @@ export const updateAssessmentController = async (
   next: NextFunction
 ) => {
   try {
-    const { id } = req.params;
-    const result = await updateAssessmentService(req.body, parseInt(id));
+    const slug = req.params.slug;
+    const companyId = res.locals.user.companyId;
+    const result = await updateAssessmentService(
+      { ...req.body, slug },
+      companyId
+    );
     res.status(200).send(result);
   } catch (error) {
     next(error);
   }
 };
 
-export const deleteAssessmentController = async (
+export const updatePreTestAssessmentStatusController = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const result = await deleteAssessmentService(req.body);
+    const { slug } = req.params;
+    const companyId = res.locals.user.companyId;
+
+    const result = await updateAssessmentStatusService(
+      {
+        ...req.body,
+        slug,
+      },
+      companyId
+    );
     res.status(200).send(result);
   } catch (error) {
     next(error);

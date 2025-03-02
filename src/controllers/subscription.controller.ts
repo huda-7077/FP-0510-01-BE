@@ -3,6 +3,7 @@ import { createSubscriptionServices } from "../services/subscription/create-subs
 import { getSubscriptionService } from "../services/subscription/get-subscription.service";
 import { getSubscriptionsService } from "../services/subscription/get-subscriptions.service";
 import { SubscriptionStatus } from "@prisma/client";
+import { deleteSubscriptionServices } from "../services/subscription/delete-subscription.service";
 
 export const getSubscriptionController = async (
   req: Request,
@@ -50,6 +51,21 @@ export const createSubscriptionController = async (
 ) => {
   try {
     const result = await createSubscriptionServices(req.body);
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteSubscriptionController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = Number(req.params.id);
+    const userId = Number(res.locals.user.id);
+    const result = await deleteSubscriptionServices(id, userId);
     res.status(200).send(result);
   } catch (error) {
     next(error);

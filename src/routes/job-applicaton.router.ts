@@ -5,6 +5,7 @@ import {
   getAvgSalaryByProvinceController,
   getJobApplicationController,
   getJobApplicationsController,
+  checkJobApplicationsUserIdController,
   getJobApplicationTotalController,
   getUserJobApplicationsController,
   updateJobApplicationController,
@@ -34,6 +35,11 @@ router.get(
   getJobApplicationController
 );
 router.get("/", verifyToken, getJobApplicationsController);
+router.get(
+  "/check-applicant",
+  verifyToken,
+  checkJobApplicationsUserIdController
+);
 router.get("/total", getJobApplicationTotalController);
 router.get("/avg-salary/position", getAvgSalaryByPositionController);
 router.get("/avg-salary/province", getAvgSalaryByProvinceController);

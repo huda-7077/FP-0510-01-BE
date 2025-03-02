@@ -24,7 +24,6 @@ export const getJobApplicationsService = async (
       educationLevel,
     } = query;
 
-    // Fetch the admin user and their associated company
     const user = await prisma.user.findFirst({
       where: {
         id: userId,
@@ -40,7 +39,6 @@ export const getJobApplicationsService = async (
       },
     });
 
-    // Ensure the admin is associated with a company
     if (!user) {
       throw new ApiError("User not found", 404);
     }
@@ -48,35 +46,32 @@ export const getJobApplicationsService = async (
       throw new ApiError("Admin is not associated with any company", 403);
     }
 
-    // Build the WHERE clause for filtering job applications
     const whereClause: Prisma.JobApplicationWhereInput = {
       job: {
         companyId: user.companyId,
       },
       OR: [
-        // Users with an active "PROFESSIONAL" subscription
         {
           user: {
             subscriptions: {
               some: {
-                status: "ACTIVE", // Subscription must be active
+                status: "ACTIVE",
                 expiredDate: {
-                  gt: new Date(), // Subscription must not be expired
+                  gt: new Date(),
                 },
                 payment: {
                   category: {
-                    name: "PROFESSIONAL", // Subscription category must be "Professional"
+                    name: "PROFESSIONAL",
                   },
                 },
               },
             },
           },
         },
-        // Users without any subscription
         {
           user: {
             subscriptions: {
-              none: {}, // No subscriptions
+              none: {},
             },
           },
         },
@@ -97,17 +92,15 @@ export const getJobApplicationsService = async (
 
     if (search) {
       whereClause.OR = [
-        ...(whereClause.OR || []),
         { user: { fullName: { contains: search, mode: "insensitive" } } },
       ];
     }
 
-    // Add sorting logic to prioritize users with active "PROFESSIONAL" subscriptions
     const orderByClause: Prisma.JobApplicationOrderByWithRelationInput[] = [
       {
         user: {
           subscriptions: {
-            _count: "desc", // Sort by the number of active subscriptions (higher count first)
+            _count: "desc",
           },
         },
       },
@@ -136,6 +129,16 @@ export const getJobApplicationsService = async (
           select: {
             title: true,
             requiresAssessment: true,
+            preTestAssessments: {
+              include: {
+                userPreTestAssessments: {
+                  select: {
+                    userId: true,
+                    score: true,
+                  },
+                },
+              },
+            },
           },
         },
         user: {

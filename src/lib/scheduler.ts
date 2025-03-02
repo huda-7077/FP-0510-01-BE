@@ -27,8 +27,6 @@ async function updateSubscriptions() {
   try {
     const now = new Date();
     const tomorrow = new Date(now.getDate() - 1);
-    // right now for testing
-    // const rightNow = new Date(now.getTime());
 
     const { count } = await prisma.subscription.updateMany({
       where: {
@@ -57,8 +55,6 @@ async function updateSubscriptions() {
 async function sendNotificationSubscription() {
   try {
     const now = new Date();
-    // 5 minutes from now for testing
-    // const minutesFromNow = new Date(now.getTime() + 5 * 60 * 1000);
 
     const tomorrow = new Date(now.getDate() + 1);
 
@@ -95,94 +91,22 @@ async function sendNotificationSubscription() {
         duration: `${duration} ${duration === 1 ? "month" : "months"}`,
         expiredAt,
       });
-
-      // console.log(
-      //   `Subscription expiry reminder sent to ${user.email} successfully!`
-      // );
     }
   } catch (error) {
     console.error("Error sending notifications:", error);
   }
 }
 
-async function updateUserAssessmentStatus() {
-  try {
-    const now = new Date();
-    const oneDayAgo = new Date(now);
-    oneDayAgo.setDate(now.getDate() - 1);
-
-    const result = await prisma.$transaction(async (prisma) => {
-      const updateUserAssessment = await prisma.userAssessment.updateMany({
-        where: {
-          createdAt: { lte: oneDayAgo },
-          status: { notIn: ["EXPIRED", "DONE"] },
-        },
-        data: {
-          status: "EXPIRED",
-        },
-      });
-
-      const updateJobApplications = await prisma.jobApplication.updateMany({
-        where: {
-          status: {
-            equals: "IN_REVIEW",
-          },
-        },
-        data: {
-          status: "REJECTED",
-        },
-      });
-
-      return {
-        userAssessmentCount: updateUserAssessment.count,
-        jobApplicationCount: updateJobApplications.count,
-      };
-    });
-
-    console.log(
-      `Updated ${result.userAssessmentCount} user assessments to EXPIRED`
-    );
-    console.log(
-      `Updated ${result.jobApplicationCount} job applications to REJECTED`
-    );
-  } catch (error) {
-    console.error("Error updating expired payments:", error);
-  }
-}
-
-async function scheduleJobsBasedOnCreatedAt() {
-  try {
-    const assessments = await prisma.userAssessment.findMany({
-      where: { status: { notIn: ["EXPIRED", "DONE"] } },
-    });
-
-    assessments.forEach((assessment) => {
-      const createdAt = new Date(assessment.createdAt);
-
-      const cronExpression = `${createdAt.getMinutes()} ${createdAt.getHours()} * * *`;
-
-      schedule.scheduleJob(cronExpression, async () => {
-        console.log(
-          `Running scheduled job to update expired user assessment for assessment ID: ${assessment.id}`
-        );
-        await updateUserAssessmentStatus();
-      });
-    });
-  } catch (error) {
-    console.error("Error scheduling jobs:", error);
-  }
-}
-
 async function updateJobApplicationStatus() {
   try {
     const now = new Date();
-    const threeDaysAgo = new Date(now);
-    threeDaysAgo.setDate(now.getDate() - 3);
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(now.getDate() - 7);
 
     const result = await prisma.$transaction(async (prisma) => {
       const updateJobApplications = await prisma.jobApplication.updateMany({
         where: {
-          updatedAt: { lte: threeDaysAgo },
+          updatedAt: { lte: sevenDaysAgo },
           status: {
             in: ["IN_REVIEW", "PENDING", "INTERVIEW_SCHEDULED"],
           },
@@ -293,8 +217,6 @@ schedule.scheduleJob("0 0 * * *", async () => {
 schedule.scheduleJob("0 0 * * *", async () => {
   await updateJobApplicationStatus();
 });
-
-scheduleJobsBasedOnCreatedAt();
 
 schedule.scheduleJob("0 0 * * *", async () => {
   await interviewScheduleReminder();

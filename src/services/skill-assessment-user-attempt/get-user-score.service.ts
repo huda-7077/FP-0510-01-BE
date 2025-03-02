@@ -33,7 +33,7 @@ export const getUserScoreService = async (
       attemptId,
       totalQuestions,
       correctAnswers,
-      score,
+      score: score.toFixed(1),
       slug: attempt.skillAssessment.slug,
     };
   } catch (error) {

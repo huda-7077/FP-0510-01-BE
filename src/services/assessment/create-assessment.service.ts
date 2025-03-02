@@ -1,20 +1,54 @@
-import { Assessment } from "@prisma/client";
+import { PreTestAssessmentStatus } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
+import { generateSkillAssessmentUniqueSlug } from "../../utils/slug";
+import { ApiError } from "../../utils/apiError";
 
-export const createAssessmentService = async (body: Assessment) => {
+interface CreatePreTestAssessmentBody {
+  jobId: number;
+  title: string;
+  description: string;
+  passingScore: number;
+}
+
+export const createAssessmentService = async (
+  body: CreatePreTestAssessmentBody,
+  companyId: number
+) => {
   try {
-    const { jobId } = body;
-    const existingAssessment = await prisma.assessment.findFirst({
-      where: { jobId },
+    const { jobId, title, description, passingScore } = body;
+
+    const assessmentJob = await prisma.job.findFirst({
+      where: { id: jobId, companyId },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!assessmentJob) {
+      throw new ApiError(
+        "You don't have access to create assessment for this company",
+        403
+      );
+    }
+
+    const existingAssessment = await prisma.preTestAssessment.findFirst({
+      where: { jobId: assessmentJob.id },
     });
 
     if (existingAssessment) {
-      throw new Error("Assessment already created for the job.");
+      throw new ApiError("Assessment already created for the job.", 404);
     }
 
-    return await prisma.assessment.create({
+    const slug = await generateSkillAssessmentUniqueSlug(title);
+
+    return await prisma.preTestAssessment.create({
       data: {
-        ...body,
+        jobId: assessmentJob.id,
+        title,
+        slug,
+        description,
+        passingScore: Number(passingScore),
+        status: PreTestAssessmentStatus.DRAFT,
       },
     });
   } catch (error) {
