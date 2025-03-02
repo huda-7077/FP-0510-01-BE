@@ -56,28 +56,38 @@ export const createSubscriptionServices = async (
           }
           const expiredDate = new Date(existingSubscription.expiredDate);
 
+          let assessmentLimit = existingSubscription.assessmentLimit;
+          if (existingPayment.category.name === "STANDARD") {
+            assessmentLimit = existingSubscription.assessmentLimit + 2;
+          }
+
           await prisma.subscription.update({
             where: { id: existingSubscription.id },
             data: {
               paymentId: existingPayment.id,
               status: SubscriptionStatus.ACTIVE,
+              assessmentLimit,
               expiredDate: new Date(
                 expiredDate.getTime() +
                   existingPayment.duration * 30 * 24 * 60 * 60 * 1000
-                // expiredDate.getTime() +
-                //   existingPayment.duration * 30 * 24 * 60 * 60 * 1000
               ),
             },
           });
         } else {
+          let assessmentLimit = 0;
+          if (existingPayment.category.name === "STANDARD") {
+            assessmentLimit = 2;
+          } else if (existingPayment.category.name === "PROFESSIONAL") {
+            assessmentLimit = 10000;
+          }
           await prisma.subscription.create({
             data: {
               userId: existingPayment.userId,
               paymentId: existingPayment.id,
               status: SubscriptionStatus.ACTIVE,
+              assessmentLimit,
               expiredDate: new Date(
                 Date.now() + existingPayment.duration * 30 * 24 * 60 * 60 * 1000
-                // Date.now() + existingPayment.duration * 10 * 60 * 1000
               ),
             },
           });

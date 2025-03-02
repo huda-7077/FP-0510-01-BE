@@ -48,10 +48,25 @@ export const xenditUpdaterServices = async (body: XenditUpdaterBody) => {
           if (!existingSubscription) {
             throw new Error(`You have no active subscription to renew`);
           }
+          let assessmentLimit = existingSubscription.assessmentLimit;
+          if (payment.category.name === "STANDARD") {
+            assessmentLimit = existingSubscription.assessmentLimit + 2;
+          }
 
-          await updateSubscription(prisma, payment, existingSubscription);
+          await updateSubscription(
+            prisma,
+            payment,
+            existingSubscription,
+            assessmentLimit
+          );
         } else {
-          await createSubscription(prisma, payment);
+          let assessmentLimit = 0;
+          if (payment.category.name === "STANDARD") {
+            assessmentLimit = 2;
+          } else if (payment.category.name === "PROFESSIONAL") {
+            assessmentLimit = 10000;
+          }
+          await createSubscription(prisma, payment, assessmentLimit);
         }
         return {
           message: `Payment status updated to ${PaymentStatus.PAID} and subscription created successfully`,
@@ -131,16 +146,19 @@ const updatePaymentStatus = async (
   });
 };
 
-const createSubscription = async (prisma: any, payment: any) => {
+const createSubscription = async (
+  prisma: any,
+  payment: any,
+  assessmentLimit: number
+) => {
   await prisma.subscription.create({
     data: {
       userId: payment.userId,
       paymentId: payment.id,
       status: SubscriptionStatus.ACTIVE,
+      assessmentLimit,
       expiredDate: new Date(
         Date.now() + payment.duration * 30 * 24 * 60 * 60 * 1000
-        // For testing purposes
-        // Date.now() + payment.duration * 10 * 60 * 1000
       ),
     },
   });
@@ -149,7 +167,8 @@ const createSubscription = async (prisma: any, payment: any) => {
 const updateSubscription = async (
   prisma: any,
   payment: any,
-  existingSubscription: any
+  existingSubscription: any,
+  assessmentLimit: number
 ) => {
   const expiredDate = new Date(existingSubscription.expiredDate);
 
@@ -158,6 +177,7 @@ const updateSubscription = async (
     data: {
       paymentId: payment.id,
       status: SubscriptionStatus.ACTIVE,
+      assessmentLimit,
       expiredDate: new Date(
         expiredDate.getTime() + payment.duration * 30 * 24 * 60 * 60 * 1000
       ),

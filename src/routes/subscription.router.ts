@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createSubscriptionController,
+  deleteSubscriptionController,
   getSubscriptionController,
   getSubscriptionsController,
 } from "../controllers/subscription.controller";
@@ -9,7 +10,12 @@ import { verifyRole } from "../middleware/role.middleware";
 import { validateCreateSubscription } from "../validators/subscription.validator";
 
 const router = Router();
-router.get("/", getSubscriptionsController);
+router.get(
+  "/",
+  verifyToken,
+  verifyRole(["DEVELOPER"]),
+  getSubscriptionsController
+);
 router.get(
   "/current",
   verifyToken,
@@ -22,6 +28,12 @@ router.post(
   verifyRole(["DEVELOPER"]),
   validateCreateSubscription,
   createSubscriptionController
+);
+router.delete(
+  "/:id",
+  verifyToken,
+  verifyRole(["USER"]),
+  deleteSubscriptionController
 );
 
 export default router;

@@ -1,4 +1,7 @@
-import { SkillAssessmentUserAttemptStatus } from "@prisma/client";
+import {
+  SkillAssessmentUserAttemptStatus,
+  SubscriptionStatus,
+} from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError } from "../../utils/apiError";
 import { BASE_URL_FE } from "../../config";
@@ -24,6 +27,20 @@ export const autoSubmitUserAnswersService = async (
 
       if (!skillAssessment) {
         throw new ApiError("Skill assessment not found", 404);
+      }
+
+      const userSubscription = await tx.subscription.findFirst({
+        where: {
+          userId,
+          status: {
+            in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.MAILED],
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (!userSubscription) {
+        throw new ApiError("You have no active subscription", 400);
       }
 
       const elapsedTime = Date.now() - new Date(attempt.createdAt).getTime();
@@ -71,6 +88,15 @@ export const autoSubmitUserAnswersService = async (
           where: { id: attemptId },
           data: {
             isPassed: true,
+          },
+        });
+
+        await tx.subscription.update({
+          where: { id: userSubscription.id },
+          data: {
+            assessmentLimit: {
+              decrement: 1,
+            },
           },
         });
       }

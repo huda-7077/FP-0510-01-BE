@@ -27,8 +27,6 @@ async function updateSubscriptions() {
   try {
     const now = new Date();
     const tomorrow = new Date(now.getDate() - 1);
-    // right now for testing
-    // const rightNow = new Date(now.getTime());
 
     const { count } = await prisma.subscription.updateMany({
       where: {
@@ -57,8 +55,6 @@ async function updateSubscriptions() {
 async function sendNotificationSubscription() {
   try {
     const now = new Date();
-    // 5 minutes from now for testing
-    // const minutesFromNow = new Date(now.getTime() + 5 * 60 * 1000);
 
     const tomorrow = new Date(now.getDate() + 1);
 
@@ -95,10 +91,6 @@ async function sendNotificationSubscription() {
         duration: `${duration} ${duration === 1 ? "month" : "months"}`,
         expiredAt,
       });
-
-      // console.log(
-      //   `Subscription expiry reminder sent to ${user.email} successfully!`
-      // );
     }
   } catch (error) {
     console.error("Error sending notifications:", error);

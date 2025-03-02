@@ -50,7 +50,7 @@ export const updatePaymentService = async (
           data: {
             status: PaymentStatus.WAITING_ADMIN,
             paymentProof: secure_url,
-            expiredAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+            expiredAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
             paidAt: new Date(Date.now()),
           },
         });
