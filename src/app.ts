@@ -18,6 +18,7 @@ import invoiceRouter from "./routes/invoice.router";
 import jobApplicationRouter from "./routes/job-applicaton.router";
 import jobRouter from "./routes/job.router";
 import locationRouter from "./routes/location.router";
+import overviewRouter from "./routes/overview.router";
 import paymentRouter from "./routes/payment.router";
 import sampleRouter from "./routes/sample.router";
 import searchRouter from "./routes/search.router";
@@ -69,6 +70,7 @@ app.use("/industries", industryRouter);
 app.use("/search", searchRouter);
 app.use("/reviews", companyReviewRouter);
 app.use("/employees", employeeRouter);
+app.use("/overviews", overviewRouter);
 
 // middleware error
 app.use(errorMiddleware);
