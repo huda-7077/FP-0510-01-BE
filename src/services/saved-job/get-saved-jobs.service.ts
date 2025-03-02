@@ -1,18 +1,18 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { PaginationQueryParams } from "../../types/pagination";
+import { ApiError } from "../../utils/apiError";
 
-interface GetJobApplicationsQuery extends PaginationQueryParams {
+interface GetSavedJobsQuery extends PaginationQueryParams {
   search?: string;
-  status?: string;
   category?: string;
   startDate?: string;
   endDate?: string;
 }
 
-export const getUserJobApplicationsService = async (
-  userId: number,
-  query: GetJobApplicationsQuery
+export const getSavedJobsService = async (
+  query: GetSavedJobsQuery,
+  userId: number
 ) => {
   try {
     const {
@@ -21,18 +21,35 @@ export const getUserJobApplicationsService = async (
       sortOrder = "desc",
       take = 10,
       search,
-      status,
       category,
       startDate,
       endDate,
     } = query;
 
-    const whereClause: Prisma.JobApplicationWhereInput = {
+    const user = await prisma.user.findFirst({
+      where: {
+        id: userId,
+        isDeleted: false,
+      },
+    });
+
+    if (!user) {
+      throw new ApiError("User not found", 404);
+    }
+
+    const whereClause: Prisma.SavedJobWhereInput = {
       userId,
+      job: {
+        isDeleted: false,
+        isPublished: true,
+      },
     };
 
-    if (status) {
-      whereClause.status = status as Prisma.EnumApplicationStatusFilter;
+    if (category) {
+      whereClause.job = {
+        ...((whereClause.job as Prisma.JobWhereInput) || {}),
+        category: { equals: category, mode: "insensitive" },
+      };
     }
 
     if (search) {
@@ -53,42 +70,30 @@ export const getUserJobApplicationsService = async (
       ];
     }
 
-    if (category) {
-      whereClause.job = {
-        ...((whereClause.job as Prisma.JobWhereInput) || {}),
-        category: { equals: category, mode: "insensitive" },
-      };
-    }
-
     if (startDate && endDate) {
+      const adjustedEndDate = new Date(endDate);
+      adjustedEndDate.setHours(23, 59, 59, 999);
+
       whereClause.createdAt = {
         gte: new Date(startDate),
-        lte: new Date(endDate),
+        lte: adjustedEndDate,
       };
     }
 
-    const totalApplications = await prisma.jobApplication.count({
+    const savedJobs = await prisma.savedJob.findMany({
       where: whereClause,
-    });
-
-    const jobApplications = await prisma.jobApplication.findMany({
-      where: whereClause,
+      ...(take !== -1
+        ? {
+            skip: (page - 1) * take,
+            take,
+          }
+        : {}),
       orderBy: {
         [sortBy]: sortOrder,
       },
-      skip: (page - 1) * take,
-      take: take !== -1 ? take : undefined,
       include: {
         job: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            category: true,
-            salary: true,
-            tags: true,
-            applicationDeadline: true,
-            requiresAssessment: true,
+          include: {
             company: {
               select: {
                 id: true,
@@ -98,9 +103,7 @@ export const getUserJobApplicationsService = async (
               },
             },
             companyLocation: {
-              select: {
-                address: true,
-                postalCode: true,
+              include: {
                 regency: {
                   select: {
                     regency: true,
@@ -115,28 +118,19 @@ export const getUserJobApplicationsService = async (
             },
           },
         },
-        interviews: {
-          select: {
-            id: true,
-            scheduledDate: true,
-            interviewerName: true,
-            location: true,
-            meetingLink: true,
-          },
-          where: {
-            isDeleted: false,
-          },
-        },
       },
     });
 
+    const count = await prisma.savedJob.count({
+      where: whereClause,
+    });
+
     return {
-      data: jobApplications,
+      data: savedJobs,
       meta: {
         page: take !== -1 ? page : 1,
-        take: take !== -1 ? take : totalApplications,
-        total: totalApplications,
-        searchQuery: search || null,
+        take: take !== -1 ? take : count,
+        total: count,
       },
     };
   } catch (error) {
