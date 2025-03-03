@@ -8,11 +8,7 @@ import sendApplicationRejectionEmail from "../../lib/handlebars/sendApplicationR
 interface UpdateJobApplicationBody {
   jobId?: number;
   userId?: number;
-  cvFile?: string;
-  attachment?: string;
-  expectedSalary?: number;
   status?: JobApplication["status"];
-  notes?: string;
 }
 
 export const updateJobApplicationService = async (

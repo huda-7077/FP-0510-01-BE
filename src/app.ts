@@ -31,6 +31,7 @@ import subscriptionRouter from "./routes/subscription.router";
 import userRouter from "./routes/user.router";
 import workExperienceRouter from "./routes/work-experience.router";
 import xenditRouter from "./routes/xendit-webhook.router";
+import savedJobRouter from "./routes/saved-job.router";
 
 const app = express();
 
@@ -71,6 +72,7 @@ app.use("/search", searchRouter);
 app.use("/reviews", companyReviewRouter);
 app.use("/employees", employeeRouter);
 app.use("/overviews", overviewRouter);
+app.use("/saved-jobs", savedJobRouter);
 
 // middleware error
 app.use(errorMiddleware);
