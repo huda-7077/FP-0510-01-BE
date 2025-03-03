@@ -21,6 +21,15 @@ export const getCompaniesController = async (
       establishedYearMin: (req.query.establishedYearMin as string) || undefined,
       establishedYearMax: (req.query.establishedYearMax as string) || undefined,
       hasActiveJobs: (req.query.hasActiveJobs as string) || undefined,
+      userLatitude: req.query.userLatitude
+        ? parseFloat(req.query.userLatitude as string)
+        : undefined,
+      userLongitude: req.query.userLongitude
+        ? parseFloat(req.query.userLongitude as string)
+        : undefined,
+      maxDistance: req.query.maxDistance
+        ? parseFloat(req.query.maxDistance as string)
+        : 50,
     };
 
     const result = await getCompaniesService(query);

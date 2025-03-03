@@ -14,6 +14,10 @@ export const createSavedJobService = async (
       throw new Error("User not found.");
     }
 
+    if (user.role !== "USER") {
+      throw new Error("Only users can bookmark jobs.");
+    }
+
     const job = await prisma.job.findUnique({
       where: {
         id: jobId,

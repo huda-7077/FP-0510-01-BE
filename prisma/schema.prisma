@@ -67,6 +67,8 @@ model WorkExperience {
   isCurrentJob Boolean   @default(false)
   description  String?
   user         User      @relation(fields: [userId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@map("work_experiences")
 }

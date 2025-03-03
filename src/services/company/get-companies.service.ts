@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { PaginationQueryParams } from "../../types/pagination";
 
-type CompanySortBy = "name" | "establishedYear";
+type CompanySortBy = "name" | "establishedYear" | "distance";
 
 const validateSortOrder = (order: string): Prisma.SortOrder => {
   if (order === "asc" || order === "desc") {
@@ -18,7 +18,63 @@ interface GetCompaniesQuery extends PaginationQueryParams {
   establishedYearMin?: string;
   establishedYearMax?: string;
   hasActiveJobs?: string;
+  userLatitude?: number;
+  userLongitude?: number;
+  maxDistance?: number;
 }
+
+function haversineDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371;
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function toRadians(degrees: number): number {
+  return degrees * (Math.PI / 180);
+}
+
+type CompanyWithDistance = Prisma.CompanyGetPayload<{
+  include: {
+    companyLocations: {
+      select: {
+        address: boolean;
+        postalCode: boolean;
+        latitude: boolean;
+        longitude: boolean;
+        regency: {
+          select: {
+            regency: boolean;
+            province: {
+              select: {
+                province: boolean;
+              };
+            };
+          };
+        };
+      };
+    };
+    _count: {
+      select: {
+        jobs: boolean;
+      };
+    };
+  };
+}> & { distance?: number };
 
 export const getCompaniesService = async (query: GetCompaniesQuery) => {
   try {
@@ -33,12 +89,19 @@ export const getCompaniesService = async (query: GetCompaniesQuery) => {
       establishedYearMin,
       establishedYearMax,
       hasActiveJobs,
+      userLatitude,
+      userLongitude,
+      maxDistance = 50,
     } = query;
 
     const validatedSortOrder = validateSortOrder(sortOrder);
 
-    if (!["name", "establishedYear"].includes(sortBy)) {
+    if (!["name", "establishedYear", "distance"].includes(sortBy)) {
       throw new Error("Invalid sortBy field.");
+    }
+
+    if (sortBy === "distance" && (!userLatitude || !userLongitude)) {
+      throw new Error("Cannot sort by distance without user coordinates.");
     }
 
     const whereClause: Prisma.CompanyWhereInput = {
@@ -91,13 +154,13 @@ export const getCompaniesService = async (query: GetCompaniesQuery) => {
     const orderByClause: Prisma.CompanyOrderByWithRelationInput = {};
     if (sortBy === "establishedYear") {
       orderByClause.establishedYear = validatedSortOrder;
-    } else {
-      orderByClause.name = validatedSortOrder; // Default to sorting by name
+    } else if (sortBy !== "distance") {
+      orderByClause.name = validatedSortOrder;
     }
 
     const companies = await prisma.company.findMany({
       where: whereClause,
-      ...(take !== -1
+      ...(take !== -1 && !userLatitude && !userLongitude
         ? {
             skip: (page - 1) * take,
             take: take,
@@ -109,6 +172,8 @@ export const getCompaniesService = async (query: GetCompaniesQuery) => {
           select: {
             address: true,
             postalCode: true,
+            latitude: true,
+            longitude: true,
             regency: {
               select: {
                 regency: true,
@@ -151,7 +216,57 @@ export const getCompaniesService = async (query: GetCompaniesQuery) => {
       },
     });
 
-    const formattedCompanies = companies.map((company) => {
+    let processedCompanies: CompanyWithDistance[] = companies;
+    if (userLatitude && userLongitude) {
+      processedCompanies = companies
+        .map((company) => {
+          const distances = company.companyLocations.map((location) => {
+            const locationLat = parseFloat(location.latitude || "0");
+            const locationLng = parseFloat(location.longitude || "0");
+            return haversineDistance(
+              userLatitude,
+              userLongitude,
+              locationLat,
+              locationLng
+            );
+          });
+
+          // Find minimum distance (closest location)
+          const minDistance =
+            distances.length > 0 ? Math.min(...distances) : Infinity;
+
+          return {
+            ...company,
+            distance: minDistance,
+          };
+        })
+        .filter(
+          (company) =>
+            company.distance !== undefined && company.distance <= maxDistance
+        );
+
+      if (sortBy === "distance") {
+        processedCompanies.sort((a, b) => {
+          const distanceA = a.distance || Infinity;
+          const distanceB = b.distance || Infinity;
+          return distanceA - distanceB;
+        });
+      }
+    }
+
+    let paginatedCompanies = processedCompanies;
+    if (
+      ((userLatitude && userLongitude) || sortBy === "distance") &&
+      take !== -1
+    ) {
+      const startIndex = (page - 1) * take;
+      paginatedCompanies = processedCompanies.slice(
+        startIndex,
+        startIndex + take
+      );
+    }
+
+    const formattedCompanies = paginatedCompanies.map((company) => {
       const avgRating = avgRatings.find((r) => r.companyId === company.id)?._avg
         .overallRating;
       return {
@@ -165,8 +280,9 @@ export const getCompaniesService = async (query: GetCompaniesQuery) => {
       data: formattedCompanies,
       meta: {
         page: take !== -1 ? page : 1,
-        take: take !== -1 ? take : count,
-        total: count,
+        take: take !== -1 ? take : processedCompanies.length,
+        total:
+          userLatitude && userLongitude ? processedCompanies.length : count,
       },
     };
   } catch (error) {

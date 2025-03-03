@@ -13,11 +13,10 @@ const router = Router();
 router.post(
   "/",
   verifyToken,
-  verifyRole(["USER"]),
   validateCreateSavedJob,
   createSavedJobController
 );
-router.get("/", verifyToken, verifyRole(["USER"]), getSavedJobsController);
+router.get("/", verifyToken, getSavedJobsController);
 router.delete(
   "/:id",
   verifyToken,
