@@ -1,9 +1,19 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { TimeRange } from "./get-avg-salary-by-position";
+import { redisClient } from "../../lib/redis";
+import { ApiError } from "../../utils/apiError";
 
 export const getAvgSalaryByProvinceService = async (timeRange: TimeRange) => {
   try {
+    const redisKey = `avgSalaryByProvinceData:${timeRange}`;
+
+    const cachedAvgSalaryByProvinceData = await redisClient.get(redisKey);
+
+    if (cachedAvgSalaryByProvinceData) {
+      return JSON.parse(cachedAvgSalaryByProvinceData);
+    }
+
     let startDate: Date | undefined;
     const now = new Date();
 
@@ -24,7 +34,7 @@ export const getAvgSalaryByProvinceService = async (timeRange: TimeRange) => {
         startDate = undefined;
         break;
       default:
-        throw new Error("Invalid time range specified.");
+        throw new ApiError("Invalid time range specified.", 400);
     }
 
     const salaryAverageByProvince = await prisma.$queryRaw<
@@ -32,9 +42,9 @@ export const getAvgSalaryByProvinceService = async (timeRange: TimeRange) => {
     >`
       SELECT 
         p.province AS province,
-        AVG(ja."expectedSalary") AS "avgSalary"
+        AVG(cr."salaryEstimate") AS "avgSalary"
       FROM 
-        job_applications ja
+        company_reviews cr
       LEFT JOIN
         users u ON "userId" = u.id
       LEFT JOIN 
@@ -47,7 +57,7 @@ export const getAvgSalaryByProvinceService = async (timeRange: TimeRange) => {
         p.province IS NOT NULL
         ${
           startDate
-            ? Prisma.sql`AND ja."createdAt" >= ${startDate}`
+            ? Prisma.sql`AND cr."createdAt" >= ${startDate}`
             : Prisma.empty
         }
       GROUP BY 
@@ -62,9 +72,10 @@ export const getAvgSalaryByProvinceService = async (timeRange: TimeRange) => {
       avgSalary: Number(item.avgSalary),
     }));
 
+    await redisClient.setEx(redisKey, 3600, JSON.stringify({ data: result }));
+
     return { data: result };
   } catch (error) {
-    console.error("Error fetching average salary by position:", error);
     throw error;
   }
 };

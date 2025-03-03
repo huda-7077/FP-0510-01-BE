@@ -29,7 +29,7 @@ export const createAssessmentQuestionService = async (
     }
 
     const existingPreTestAssessment = await prisma.preTestAssessment.findFirst({
-      where: { id: preTestAssessmentId, job: { companyId } },
+      where: { id: preTestAssessmentId, job: { companyId }, status: "DRAFT" },
     });
 
     if (!existingPreTestAssessment) {

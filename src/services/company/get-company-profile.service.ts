@@ -9,6 +9,22 @@ export const getCompanyProfileService = async (userId: number) => {
           where: {
             isDeleted: false,
           },
+          include: {
+            companyLocations: {
+              select: {
+                id: true,
+                address: true,
+                latitude: true,
+                longitude: true,
+                regency: {
+                  select: {
+                    regency: true,
+                    province: { select: { province: true } },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     });

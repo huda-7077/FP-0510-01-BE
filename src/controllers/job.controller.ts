@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import { getJobsService } from "../services/job/get-jobs.service";
-import { getJobCategoriesService } from "../services/job/get-jobs-categories.service";
 import { getJobService } from "../services/job/get-job.service";
 import { createJobService } from "../services/job/create-job.service";
 import { updateJobService } from "../services/job/update-job.service";
@@ -20,7 +19,7 @@ export const getJobsController = async (
 ) => {
   try {
     const query = {
-      take: parseInt(req.query.take as string) || 10, 
+      take: parseInt(req.query.take as string) || 10,
       page: parseInt(req.query.page as string) || 1,
       sortBy: (req.query.sortBy as string) || "createdAt",
       sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
@@ -31,8 +30,8 @@ export const getJobsController = async (
       endDate: req.query.endDate as string,
       location: req.query.location as string,
       companyId: parseInt(req.query.companyId as string),
-      userLatitude: parseFloat(req.query.userLatitude as string) || undefined, 
-      userLongitude: parseFloat(req.query.userLongitude as string) || undefined, 
+      userLatitude: parseFloat(req.query.userLatitude as string) || undefined,
+      userLongitude: parseFloat(req.query.userLongitude as string) || undefined,
       maxDistance: parseFloat(req.query.maxDistance as string) || 50,
     };
 
@@ -80,9 +79,9 @@ export const getJobController = async (
   next: NextFunction
 ) => {
   try {
-    const { id } = req.params;
+    const { slug } = req.params;
     const companyId = parseInt(req.query.companyId as string);
-    const result = await getJobService(parseInt(id), companyId);
+    const result = await getJobService(slug, companyId);
     res.status(200).send(result);
   } catch (error) {
     next(error);
@@ -98,23 +97,6 @@ export const getCompanyJobController = async (
     const { id } = req.params;
     const userId = res.locals.user.id;
     const result = await getCompanyJobService(parseInt(id), userId);
-    res.status(200).send(result);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getJobCategoriesController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const query = {
-      companyId: parseInt(req.query.companyId as string) || 0,
-    };
-
-    const result = await getJobCategoriesService(query);
     res.status(200).send(result);
   } catch (error) {
     next(error);
@@ -144,8 +126,14 @@ export const createJobController = async (
   try {
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const bannerImage = files?.bannerImage?.[0];
+    const companyId = res.locals.user.companyId;
 
-    const result = await createJobService(req.body, req.body.tags, bannerImage);
+    const result = await createJobService(
+      req.body,
+      req.body.tags,
+      companyId,
+      bannerImage
+    );
     res.status(201).send(result);
   } catch (error) {
     next(error);
@@ -161,11 +149,14 @@ export const updateJobController = async (
     const { id } = req.params;
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const bannerImage = files?.bannerImage?.[0];
+    const companyId = res.locals.user.companyId;
 
     const result = await updateJobService(
       Number(id),
       req.body,
       req.body.tags,
+      companyId,
+      req.body.generateSlug,
       bannerImage
     );
     res.status(201).send(result);
@@ -181,8 +172,12 @@ export const updateJobStatusController = async (
 ) => {
   try {
     const { id } = req.params;
-
-    const result = await updateJobStatusService(Number(id), req.body);
+    const companyId = res.locals.user.companyId;
+    const result = await updateJobStatusService(
+      Number(id),
+      companyId,
+      req.body
+    );
     res.status(201).send(result);
   } catch (error) {
     next(error);
@@ -196,8 +191,8 @@ export const deleteJobController = async (
 ) => {
   try {
     const { id } = req.params;
-
-    const result = await deleteJobService(Number(id));
+    const companyId = res.locals.user.companyId;
+    const result = await deleteJobService(Number(id), companyId);
     res.status(201).send(result);
   } catch (error) {
     next(error);

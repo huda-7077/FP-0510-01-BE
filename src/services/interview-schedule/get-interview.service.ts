@@ -90,10 +90,7 @@ export const getInterviewService = async (id: number, userId: number) => {
     });
 
     return fullInterview;
-  } catch (error: any) {
-    throw new ApiError(
-      error.message || "There is a problem fetching data",
-      error.statusCode || 400
-    );
+  } catch (error) {
+    throw error;
   }
 };

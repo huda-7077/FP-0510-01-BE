@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
+import { ApiError } from "../../utils/apiError";
 
 export type TimeRange =
   | "Last 7 days"
@@ -30,7 +31,7 @@ export const getPopularJobCategoriesService = async (timeRange: TimeRange) => {
         startDate = new Date(now.getTime() - 5 * 365 * 24 * 60 * 60 * 1000);
         break;
       default:
-        throw new Error("Invalid time range specified.");
+        throw new ApiError("Invalid time range specified.", 400);
     }
 
     const popularJobCategories = await prisma.$queryRaw<
@@ -64,7 +65,6 @@ export const getPopularJobCategoriesService = async (timeRange: TimeRange) => {
 
     return { data: result };
   } catch (error) {
-    console.error("Error fetching popular job categories:", error);
     throw error;
   }
 };

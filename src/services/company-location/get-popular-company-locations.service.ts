@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
+import { redisClient } from "../../lib/redis";
 
 export type TimeRange =
   | "Last 7 days"
@@ -11,7 +12,15 @@ export type TimeRange =
 export const getPopularCompanyLocationsService = async (
   timeRange: TimeRange
 ) => {
+  const redisKey = `popularProvincesData:${timeRange}`;
+
   try {
+    const cachedPopularProvincesData = await redisClient.get(redisKey);
+
+    if (cachedPopularProvincesData) {
+      return JSON.parse(cachedPopularProvincesData);
+    }
+
     let startDate: Date | undefined;
     const now = new Date();
 
@@ -70,6 +79,8 @@ export const getPopularCompanyLocationsService = async (
       province: item.province || "Unknown",
       applicants: Number(item.applicants),
     }));
+
+    await redisClient.setEx(redisKey, 3600, JSON.stringify({ data: result }));
 
     return { data: result };
   } catch (error) {

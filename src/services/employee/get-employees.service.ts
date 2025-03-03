@@ -92,6 +92,7 @@ export const getEmployeesService = async (
           select: {
             fullName: true,
             email: true,
+            profilePicture: true,
           },
         },
       },

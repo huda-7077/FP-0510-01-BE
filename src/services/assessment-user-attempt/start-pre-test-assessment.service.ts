@@ -18,7 +18,7 @@ export const startPreTestAssessmentService = async (
     });
 
     if (!preTestAssessment) {
-      throw new ApiError("Skill assessment not found", 404);
+      throw new ApiError("Pre test assessment not found", 404);
     }
 
     const existingAttempt = await prisma.preTestAssessmentUserAttempt.findFirst(

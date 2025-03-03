@@ -1,6 +1,7 @@
 import { Interview } from "@prisma/client";
 import sendInterviewReminderEmail from "../../lib/handlebars/sendInterviewReminderEmail";
 import { prisma } from "../../lib/prisma";
+import { ApiError } from "../../utils/apiError";
 
 export const createInterviewService = async (
   userId: number,
@@ -24,11 +25,11 @@ export const createInterviewService = async (
     });
 
     if (!user) {
-      throw new Error("Authentication Failed");
+      throw new ApiError("Authentication Failed", 401);
     }
 
     if (!user.companyId) {
-      throw new Error("Authorization Failed");
+      throw new ApiError("Authorization Failed", 403);
     }
 
     const jobApplication = await prisma.jobApplication.findFirst({
@@ -36,8 +37,9 @@ export const createInterviewService = async (
     });
 
     if (!jobApplication) {
-      throw new Error(
-        "Job application not found or you don't have access to this job application"
+      throw new ApiError(
+        "Job application not found or you don't have access to this job application",
+        403
       );
     }
 
@@ -49,11 +51,6 @@ export const createInterviewService = async (
       });
 
       if (existingInterview) {
-        // throw new ApiError(
-        //   `Interview schedule with job application #${jobApplicationId} already exists`,
-        //   409
-        // );
-
         throw new Error(
           "Interview schedule already exists for this applicant."
         );
@@ -119,14 +116,6 @@ export const createInterviewService = async (
       return interview;
     });
   } catch (error) {
-    //! Log unexpected errors for debugging purposes
-    console.error("Unexpected error during interview creation:", error);
-
-    // throw new ApiError(
-    //   "An unexpected error occurred while creating the interview",
-    //   400
-    // );
-
-    throw new Error();
+    throw error;
   }
 };

@@ -18,11 +18,11 @@ export const deleteInterviewService = async (id: number, userId: number) => {
     });
 
     if (!user) {
-      throw new Error("Authentication Failed");
+      throw new ApiError("Authentication Failed", 401);
     }
 
     if (!user.companyId) {
-      throw new Error("Authorization Failed");
+      throw new ApiError("Authorization Failed", 403);
     }
 
     const existingInterview = await prisma.interview.findUnique({

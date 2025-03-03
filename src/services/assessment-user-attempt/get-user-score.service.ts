@@ -66,7 +66,7 @@ export const getUserScoreService = async (
         : 0;
 
       if (jobApplicationId === 0) {
-        throw new Error("Job application not found.");
+        throw new ApiError("Job application not found.", 404);
       }
 
       if (score < attempt.preTestAssessment.passingScore) {

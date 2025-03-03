@@ -161,6 +161,7 @@ model Job {
   id                  Int                 @id @default(autoincrement())
   companyId           Int
   title               String
+  slug                String              @unique
   description         String
   bannerImage         String?
   category            String

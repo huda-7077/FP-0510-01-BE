@@ -63,7 +63,7 @@ export const getCompanyJobService = async (id: number, userId: number) => {
     });
 
     if (!job) {
-      throw new Error("Job not found");
+      throw new ApiError("Job not found", 404);
     }
 
     return job;
