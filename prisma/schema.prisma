@@ -67,6 +67,8 @@ model WorkExperience {
   isCurrentJob Boolean   @default(false)
   description  String?
   user         User      @relation(fields: [userId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@map("work_experiences")
 }
@@ -234,14 +236,15 @@ model CompanyReview {
 }
 
 model Subscription {
-  id          Int                @id @default(autoincrement())
-  userId      Int
-  paymentId   Int
-  expiredDate DateTime
-  status      SubscriptionStatus
-  createdAt   DateTime           @default(now())
-  user        User               @relation(fields: [userId], references: [id])
-  payment     Payment            @relation(fields: [paymentId], references: [id])
+  id              Int                @id @default(autoincrement())
+  userId          Int
+  paymentId       Int
+  expiredDate     DateTime
+  status          SubscriptionStatus
+  assessmentLimit Int                @default(0)
+  createdAt       DateTime           @default(now())
+  user            User               @relation(fields: [userId], references: [id])
+  payment         Payment            @relation(fields: [paymentId], references: [id])
 
   @@map("subscriptions")
 }

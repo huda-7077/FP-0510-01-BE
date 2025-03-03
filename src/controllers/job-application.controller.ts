@@ -9,6 +9,25 @@ import {
 import { getAvgSalaryByProvinceService } from "../services/job-application/get-avg-salary-by-location";
 import { checkJobApplicationsUserIdService } from "../services/job-application/check-job-applications-user-id.service";
 import { updateJobApplicationCompanyService } from "../services/job-application/update-job-application-company.service";
+import { createJobApplicationService } from "../services/job-application/create-job-application.service";
+import { getUserJobApplicationsService } from "../services/job-application/get-user-job-applications.service";
+import { getJobApplicationService } from "../services/job-application/get-job-application.service";
+
+export const createJobApplicationController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const files = req.files as { [fieldName: string]: Express.Multer.File[] };
+    const userId = res.locals.user.id;
+    const result = await createJobApplicationService(userId, req.body, files);
+
+    res.status(201).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const updateJobApplicationController = async (
   req: Request,
@@ -36,6 +55,20 @@ export const updateJobApplicationController = async (
   }
 };
 
+export const getJobApplicationController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const result = await getJobApplicationService(req.body, parseInt(id));
+    res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getJobApplicationsController = async (
   req: Request,
   res: Response,
@@ -58,6 +91,36 @@ export const getJobApplicationsController = async (
 
     const result = await getJobApplicationsService(query, userId);
     res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUserJobApplicationsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const query = {
+      take: parseInt(req.query.take as string) || 10,
+      page: parseInt(req.query.page as string) || 1,
+      sortBy: (req.query.sortBy as string) || "createdAt",
+      sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+      search: req.query.search as string,
+      status: req.query.status as string,
+      category: req.query.category as string,
+      startDate: req.query.startDate as string,
+      endDate: req.query.endDate as string,
+    };
+    const userId = res.locals.user.id;
+
+    const result = await getUserJobApplicationsService(userId, query);
+
+    res.status(200).send({
+      status: "success",
+      ...result,
+    });
   } catch (error) {
     next(error);
   }

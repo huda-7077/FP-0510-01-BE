@@ -18,6 +18,7 @@ import invoiceRouter from "./routes/invoice.router";
 import jobApplicationRouter from "./routes/job-applicaton.router";
 import jobRouter from "./routes/job.router";
 import locationRouter from "./routes/location.router";
+import overviewRouter from "./routes/overview.router";
 import paymentRouter from "./routes/payment.router";
 import sampleRouter from "./routes/sample.router";
 import searchRouter from "./routes/search.router";
@@ -30,6 +31,7 @@ import subscriptionRouter from "./routes/subscription.router";
 import userRouter from "./routes/user.router";
 import workExperienceRouter from "./routes/work-experience.router";
 import xenditRouter from "./routes/xendit-webhook.router";
+import savedJobRouter from "./routes/saved-job.router";
 
 const app = express();
 
@@ -74,6 +76,8 @@ app.use("/industries", industryRouter);
 app.use("/search", searchRouter);
 app.use("/reviews", companyReviewRouter);
 app.use("/employees", employeeRouter);
+app.use("/overviews", overviewRouter);
+app.use("/saved-jobs", savedJobRouter);
 
 // middleware error
 app.use(errorMiddleware);

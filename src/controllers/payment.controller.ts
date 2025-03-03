@@ -5,6 +5,7 @@ import { getPaymentService } from "../services/payment/get-payment.service";
 import { getPaymentsByUserService } from "../services/payment/get-payments-by-user.service";
 import { getPaymentsService } from "../services/payment/get-payments.service";
 import { updatePaymentService } from "../services/payment/update-payment.service";
+import { getPaymentsUserService } from "../services/payment/get-payments-user-service";
 
 export const getPaymentController = async (
   req: Request,
@@ -44,7 +45,13 @@ export const getPaymentsController = async (
         ? (req.query.paymentMethod as PaymentMethod)
         : undefined,
     };
-    const result = await getPaymentsService(query);
+    const userId = Number(res.locals.user.id);
+    let result;
+    if (res.locals.user.role === "DEVELOPER") {
+      result = await getPaymentsService(query);
+    } else {
+      result = await getPaymentsUserService(query, userId);
+    }
     res.status(200).send(result);
   } catch (error) {
     next(error);

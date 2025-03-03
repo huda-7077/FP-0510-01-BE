@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createAssessmentController,
   getAssessmentController,
+  getAssessmentSlugByJobIdController,
   updateAssessmentController,
   updatePreTestAssessmentStatusController,
 } from "../controllers/assessment.controller";
@@ -20,6 +21,14 @@ router.get(
   verifyRole(["ADMIN", "USER"]),
   getAssessmentController
 );
+
+router.get(
+  "/",
+  verifyToken,
+  verifyRole(["USER"]),
+  getAssessmentSlugByJobIdController
+);
+
 router.post(
   "/",
   verifyToken,

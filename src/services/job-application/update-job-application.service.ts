@@ -7,8 +7,9 @@ import sendApplicationRejectionEmail from "../../lib/handlebars/sendApplicationR
 import { ApiError } from "../../utils/apiError";
 
 interface UpdateJobApplicationBody {
+  jobId?: number;
+  userId?: number;
   status?: JobApplication["status"];
-  notes?: string;
 }
 
 export const updateJobApplicationService = async (

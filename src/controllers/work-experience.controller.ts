@@ -23,8 +23,16 @@ export const getWorkExperiencesController = async (
   next: NextFunction
 ) => {
   try {
+    const query = {
+      take: parseInt(req.query.take as string) || 10,
+      page: parseInt(req.query.page as string) || 1,
+      sortBy: (req.query.sortBy as string) || "createdAt",
+      sortOrder: (req.query.sortOrder as "asc" | "desc") || "desc",
+      search: req.query.search as string,
+    };
+
     const userId = Number(res.locals.user.id);
-    const result = await getWorkExperiencesService(userId);
+    const result = await getWorkExperiencesService(query, userId);
     res.status(200).send(result);
   } catch (error) {
     next(error);

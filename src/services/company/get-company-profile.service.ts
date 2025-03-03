@@ -3,10 +3,7 @@ import { prisma } from "../../lib/prisma";
 export const getCompanyProfileService = async (userId: number) => {
   try {
     const user = await prisma.user.findFirst({
-      where: {
-        id: userId,
-        isDeleted: false,
-      },
+      where: { id: userId, isDeleted: false },
       include: {
         company: {
           where: {
