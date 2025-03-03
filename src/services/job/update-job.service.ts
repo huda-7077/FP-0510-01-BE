@@ -16,7 +16,7 @@ export const updateJobService = async (
     const { title, slug, companyLocationId, applicationDeadline } = body;
 
     const existingJob = await prisma.job.findUnique({
-      where: { id, isDeleted: false, companyId },
+      where: { id, isDeleted: false, companyId, isPublished: false },
     });
 
     if (!existingJob) {
@@ -84,14 +84,6 @@ export const updateJobService = async (
 
     return updatedJob;
   } catch (error) {
-    //! Log the error for debugging purposes - delete on production
-    console.error("Error in updateJobService:", error);
-
-    let errorMessage = "An unexpected error occurred while creating the job.";
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-
-    throw new Error(errorMessage);
+    throw error;
   }
 };

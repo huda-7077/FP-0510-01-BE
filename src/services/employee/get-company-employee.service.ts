@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma";
+import { ApiError } from "../../utils/apiError";
 
 export const getCompanyEmployeeService = async (
   companyId: number,
@@ -13,7 +14,7 @@ export const getCompanyEmployeeService = async (
     });
 
     if (!result) {
-      throw new Error("You are not an employee of this company");
+      throw new ApiError("You are not an employee of this company", 403);
     }
 
     return result;

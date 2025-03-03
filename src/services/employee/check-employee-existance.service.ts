@@ -9,7 +9,7 @@ export const checkEmployeeExistanceService = async (
       SELECT EXISTS (
         SELECT 1
         FROM "employees"
-        WHERE "companyId" = ${companyId} AND "userId" = ${userId}
+        WHERE "companyId" = ${companyId} AND "userId" = ${userId} AND "isEmployee" = true
       ) AS "exists"
     `;
 
@@ -17,7 +17,6 @@ export const checkEmployeeExistanceService = async (
 
     return { isExist: exists };
   } catch (error) {
-    console.error("Error checking employee user ID:", error);
     throw error;
   }
 };

@@ -14,13 +14,13 @@ import { verifyRole } from "../middleware/role.middleware";
 const router = Router();
 
 router.get("/", getCompaniesController);
-router.get("/:id", getCompanyController);
 router.get(
   "/profile",
   verifyToken,
   verifyRole(["ADMIN"]),
   getCompanyProfileController
 );
+router.get("/:id", getCompanyController);
 router.patch(
   "/profile",
   verifyToken,

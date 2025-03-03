@@ -4,6 +4,7 @@ import sendAssessmentReminderEmail from "../../lib/handlebars/sendAssessmentRemi
 import { BASE_URL_FE } from "../../config";
 import sendApplicationAcceptanceEmail from "../../lib/handlebars/sendApplicationAcceptanceEmail";
 import sendApplicationRejectionEmail from "../../lib/handlebars/sendApplicationRejectionEmail";
+import { ApiError } from "../../utils/apiError";
 
 interface UpdateJobApplicationCompanyBody {
   status?: JobApplication["status"];
@@ -17,7 +18,7 @@ export const updateJobApplicationCompanyService = async (
 ) => {
   try {
     if (!id || id <= 0) {
-      throw new Error("Invalid job application ID.");
+      throw new ApiError("Invalid job application ID.", 400);
     }
 
     const { status } = body;
@@ -28,7 +29,10 @@ export const updateJobApplicationCompanyService = async (
       });
 
       if (!existingJobApplication) {
-        throw new Error("Job application not found or you don't have access.");
+        throw new ApiError(
+          "Job application not found or you don't have access.",
+          404
+        );
       }
 
       const updatedJobApplication = await prisma.jobApplication.update({
@@ -70,10 +74,9 @@ export const updateJobApplicationCompanyService = async (
       ) {
         const assessmentId =
           updatedJobApplication.job.preTestAssessments[0]?.id;
-        const userId = updatedJobApplication.userId;
 
         if (!assessmentId) {
-          throw new Error("No assessment available for this job.");
+          throw new ApiError("No assessment available for this job.", 404);
         }
       }
 
@@ -132,15 +135,6 @@ export const updateJobApplicationCompanyService = async (
 
     return result;
   } catch (error) {
-    //! Log the error for debugging purposes - delete on production
-    console.error(`Error in updateJobApplication for id ${id}:`, error);
-
-    let errorMessage =
-      "An unexpected error occurred while updating the job application.";
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-
-    throw new Error(errorMessage);
+    throw error;
   }
 };

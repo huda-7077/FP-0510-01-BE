@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { TimeRange } from "./get-avg-salary-by-position";
 import { redisClient } from "../../lib/redis";
+import { ApiError } from "../../utils/apiError";
 
 export const getAvgSalaryByProvinceService = async (timeRange: TimeRange) => {
   try {
@@ -33,7 +34,7 @@ export const getAvgSalaryByProvinceService = async (timeRange: TimeRange) => {
         startDate = undefined;
         break;
       default:
-        throw new Error("Invalid time range specified.");
+        throw new ApiError("Invalid time range specified.", 400);
     }
 
     const salaryAverageByProvince = await prisma.$queryRaw<
@@ -75,7 +76,6 @@ export const getAvgSalaryByProvinceService = async (timeRange: TimeRange) => {
 
     return { data: result };
   } catch (error) {
-    console.error("Error fetching average salary by position:", error);
     throw error;
   }
 };

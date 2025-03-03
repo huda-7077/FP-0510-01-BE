@@ -172,8 +172,12 @@ export const updateJobStatusController = async (
 ) => {
   try {
     const { id } = req.params;
-
-    const result = await updateJobStatusService(Number(id), req.body);
+    const companyId = res.locals.user.companyId;
+    const result = await updateJobStatusService(
+      Number(id),
+      companyId,
+      req.body
+    );
     res.status(201).send(result);
   } catch (error) {
     next(error);
@@ -187,8 +191,8 @@ export const deleteJobController = async (
 ) => {
   try {
     const { id } = req.params;
-
-    const result = await deleteJobService(Number(id));
+    const companyId = res.locals.user.companyId;
+    const result = await deleteJobService(Number(id), companyId);
     res.status(201).send(result);
   } catch (error) {
     next(error);

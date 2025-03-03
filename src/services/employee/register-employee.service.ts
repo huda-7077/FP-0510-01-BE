@@ -32,7 +32,10 @@ export const registerEmployeeService = async (
     });
 
     if (existingEmployee) {
-      throw new Error("User has already been registered as an employee.");
+      throw new ApiError(
+        "User has already been registered as an employee.",
+        400
+      );
     }
 
     return await prisma.employee.create({

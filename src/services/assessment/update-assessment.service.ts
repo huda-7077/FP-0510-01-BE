@@ -45,7 +45,7 @@ export const updateAssessmentService = async (
     }
 
     return await prisma.preTestAssessment.update({
-      where: { slug },
+      where: { slug, status: "DRAFT" },
       data: {
         description,
         title,

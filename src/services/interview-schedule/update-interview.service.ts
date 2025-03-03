@@ -33,11 +33,11 @@ export const updateInterviewService = async (
     });
 
     if (!user) {
-      throw new Error("Authentication Failed");
+      throw new ApiError("Authentication Failed", 401);
     }
 
     if (!user.companyId) {
-      throw new Error("Authorization Failed");
+      throw new ApiError("Authorization Failed", 403);
     }
 
     const existingInterview = await prisma.interview.findUnique({
@@ -108,7 +108,6 @@ export const updateInterviewService = async (
 
     return updatedInterview;
   } catch (error) {
-    console.error(`Error in updateAssessment for id ${id}:`, error);
-    throw new ApiError("Update interview failed", 400);
+    throw error;
   }
 };

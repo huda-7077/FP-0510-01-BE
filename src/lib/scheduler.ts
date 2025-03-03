@@ -114,7 +114,7 @@ async function updateJobApplicationStatus() {
     const result = await prisma.$transaction(async (prisma) => {
       const updateJobApplications = await prisma.jobApplication.updateMany({
         where: {
-          updatedAt: { lte: sevenDaysAgo },
+          updatedAt: { lt: sevenDaysAgo },
           status: {
             in: ["IN_REVIEW", "PENDING", "INTERVIEW_SCHEDULED"],
           },
@@ -133,22 +133,26 @@ async function updateJobApplicationStatus() {
       `Updated ${result.jobApplicationCount} job applications to REJECTED`
     );
   } catch (error) {
-    console.error("Error updating expired payments:", error);
+    console.error("Error updating job application statuses:", error);
   }
 }
 
 async function interviewScheduleReminder() {
   try {
     const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1);
+    const startOfTomorrow = new Date(now);
+    startOfTomorrow.setDate(now.getDate() + 1);
+    startOfTomorrow.setHours(0, 0, 0, 0);
+
+    const endOfTomorrow = new Date(startOfTomorrow);
+    endOfTomorrow.setHours(23, 59, 59, 999);
 
     const interviews = await prisma.interview.findMany({
       where: {
         isDeleted: false,
         scheduledDate: {
-          gte: now,
-          lte: tomorrow,
+          gte: startOfTomorrow,
+          lte: endOfTomorrow,
         },
       },
       include: {
@@ -177,18 +181,23 @@ async function interviewScheduleReminder() {
 
     if (interviews) {
       for (const interview of interviews) {
-        sendInterviewReminderEmail({
-          email: interview.jobApplication.user.email,
-          position: interview.jobApplication.job.title,
-          company_name: interview.jobApplication.job.company.name,
-          applicant_name: interview.jobApplication.user.fullName,
-          company_logo: interview.jobApplication.job.company.logo || undefined,
-          scheduledDate: interview.scheduledDate,
-          interviewerName: interview.interviewerName,
-          location: interview.location,
-          meetingLink: interview.meetingLink || undefined,
-          notes: interview.notes || undefined,
-        });
+        try {
+          await sendInterviewReminderEmail({
+            email: interview.jobApplication.user.email,
+            position: interview.jobApplication.job.title,
+            company_name: interview.jobApplication.job.company.name,
+            applicant_name: interview.jobApplication.user.fullName,
+            company_logo:
+              interview.jobApplication.job.company.logo || undefined,
+            scheduledDate: interview.scheduledDate,
+            interviewerName: interview.interviewerName,
+            location: interview.location,
+            meetingLink: interview.meetingLink || undefined,
+            notes: interview.notes || undefined,
+          });
+        } catch (error) {
+          throw error;
+        }
 
         console.log(
           `Reminder email sent to ${interview.jobApplication.user.email} successfully!`
@@ -196,7 +205,7 @@ async function interviewScheduleReminder() {
       }
     }
   } catch (error) {
-    console.error("Error sending interview reminder:", error);
+    console.error("Error sending interview reminders:", error);
   }
 }
 
@@ -226,7 +235,7 @@ schedule.scheduleJob("0 0 * * *", async () => {
   await updateJobApplicationStatus();
 });
 
-schedule.scheduleJob("0 0 * * *", async () => {
+schedule.scheduleJob("0 8 * * *", async () => {
   await interviewScheduleReminder();
 });
 
