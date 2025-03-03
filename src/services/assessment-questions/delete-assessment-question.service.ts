@@ -8,6 +8,7 @@ export const deleteAssessmentQuestionService = async (
   try {
     const existingPreTestAssessment = await prisma.preTestAssessment.findFirst({
       where: {
+        status: "DRAFT",
         job: { companyId },
         preTestAssessmentQuestions: { some: { id } },
       },

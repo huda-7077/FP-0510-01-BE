@@ -57,7 +57,7 @@ router.post(
 router.patch(
   "/:id",
   verifyToken,
-  verifyRole(["ADMIN"]),
+  verifyRole(["ADMIN", "USER"]),
   validateUpdateJobApplication,
   updateJobApplicationController
 );

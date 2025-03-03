@@ -14,6 +14,7 @@ export const updateAssessmentQuestionService = async (
   try {
     const existingPreTestAssessment = await prisma.preTestAssessment.findFirst({
       where: {
+        status: "DRAFT",
         job: { companyId },
         preTestAssessmentQuestions: { some: { id } },
       },
@@ -25,6 +26,7 @@ export const updateAssessmentQuestionService = async (
         403
       );
     }
+
     const existingQuestion = await prisma.preTestAssessmentQuestion.findUnique({
       where: { id, preTestAssessmentId: existingPreTestAssessment.id },
       include: { preTestAssessmentOptions: true },

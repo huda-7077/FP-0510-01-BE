@@ -1,13 +1,14 @@
 import { prisma } from "../../lib/prisma";
+import { ApiError } from "../../utils/apiError";
 
-export const deleteJobService = async (id: number) => {
+export const deleteJobService = async (id: number, companyId: number) => {
   try {
     const existingJob = await prisma.job.findUnique({
-      where: { id, isDeleted: false },
+      where: { id, isDeleted: false, companyId, isPublished: false },
     });
 
     if (!existingJob) {
-      throw new Error("Job not found");
+      throw new ApiError("Job not found or you don't have access", 404);
     }
 
     await prisma.job.update({

@@ -1,5 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
+import { redisClient } from "../../lib/redis";
+import { ApiError } from "../../utils/apiError";
 
 export type TimeRange =
   | "Last 7 days"
@@ -10,6 +12,14 @@ export type TimeRange =
 
 export const getAvgSalaryByPositionService = async (timeRange: TimeRange) => {
   try {
+    const redisKey = `avgSalaryByPositionData:${timeRange}`;
+
+    const cachedAvgSalaryByPositionData = await redisClient.get(redisKey);
+
+    if (cachedAvgSalaryByPositionData) {
+      return JSON.parse(cachedAvgSalaryByPositionData);
+    }
+
     let startDate: Date | undefined;
     const now = new Date();
 
@@ -30,28 +40,28 @@ export const getAvgSalaryByPositionService = async (timeRange: TimeRange) => {
         startDate = undefined;
         break;
       default:
-        throw new Error("Invalid time range specified.");
+        throw new ApiError("Invalid time range specified.", 400);
     }
 
     const salaryAverageByPosition = await prisma.$queryRaw<
       { position: string; avgSalary: number }[]
     >`
       SELECT
-        j.category AS position,
-        AVG(ja."expectedSalary") AS "avgSalary"
+        e.position AS position,
+        AVG(cr."salaryEstimate") AS "avgSalary"
       FROM 
-        job_applications ja
-      LEFT JOIN 
-        jobs j ON ja."jobId" = j.id
-      WHERE 
-        j."isDeleted" = FALSE
-        ${
-          startDate
-            ? Prisma.sql`AND ja."createdAt" >= ${startDate}`
-            : Prisma.empty
-        }
+        company_reviews cr
+      LEFT JOIN
+        users u ON cr."userId" = u.id
+      LEFT JOIN
+        employees e ON u.id = e."userId"
+      ${
+        startDate
+          ? Prisma.sql`WHERE cr."createdAt" >= ${startDate}`
+          : Prisma.empty
+      }
       GROUP BY 
-        j.category
+        e.position
       ORDER BY 
         "avgSalary" DESC
       LIMIT 10
@@ -61,6 +71,8 @@ export const getAvgSalaryByPositionService = async (timeRange: TimeRange) => {
       position: item.position || "Unknown",
       avgSalary: Number(item.avgSalary),
     }));
+
+    await redisClient.setEx(redisKey, 3600, JSON.stringify({ data: result }));
 
     return { data: result };
   } catch (error) {

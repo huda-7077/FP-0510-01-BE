@@ -1,8 +1,17 @@
 import { PrismaClient } from "@prisma/client";
+import { redisClient } from "../../lib/redis";
 const prisma = new PrismaClient();
 
 export const getUsersCountByProvinceService = async () => {
   try {
+    const cachedUserCountByProvinceData = await redisClient.get(
+      "userCountByProvinceData"
+    );
+
+    if (cachedUserCountByProvinceData) {
+      return JSON.parse(cachedUserCountByProvinceData);
+    }
+
     const userCountByProvince = await prisma.$queryRaw<
       { province: string; users: number }[]
     >`
@@ -30,6 +39,12 @@ export const getUsersCountByProvinceService = async () => {
       province: item.province || "Unknown",
       users: Number(item.users),
     }));
+
+    await redisClient.setEx(
+      "userCountByProvinceData",
+      3600,
+      JSON.stringify({ data: result })
+    );
 
     return { data: result };
   } catch (error) {

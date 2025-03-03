@@ -4,15 +4,16 @@ import { ApiError } from "../../utils/apiError";
 
 export const updateJobStatusService = async (
   id: number,
+  companyId: number,
   body: Pick<Job, "isPublished">
 ) => {
   try {
     const existingJob = await prisma.job.findUnique({
-      where: { id, isDeleted: false },
+      where: { id, isDeleted: false, companyId },
     });
 
     if (!existingJob) {
-      throw new ApiError(`Job with id ${id} not found`, 404);
+      throw new ApiError(`Job not found or you don't have access`, 404);
     }
 
     const updatedJob = await prisma.job.update({
@@ -27,14 +28,6 @@ export const updateJobStatusService = async (
 
     return updatedJob;
   } catch (error) {
-    //! Log the error for debugging purposes - delete on production
-    console.error("Error in updateJobService:", error);
-
-    let errorMessage = "An unexpected error occurred while creating the job.";
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-
-    throw new Error(errorMessage);
+    throw error;
   }
 };

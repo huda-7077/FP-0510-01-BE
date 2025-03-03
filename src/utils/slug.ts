@@ -42,3 +42,23 @@ export async function generateAssessmentUniqueSlug(
 
   return uniqueSlug;
 }
+
+export async function generateJobUniqueSlug(
+  title: string,
+  id?: number
+): Promise<string> {
+  let slug = slugify(title, { lower: true, strict: true, trim: true });
+  let uniqueSlug = slug;
+  let count = 1;
+
+  while (
+    await prisma.job.findFirst({
+      where: { slug: uniqueSlug, NOT: { id } },
+    })
+  ) {
+    uniqueSlug = `${slug}-${count}`;
+    count++;
+  }
+
+  return uniqueSlug;
+}

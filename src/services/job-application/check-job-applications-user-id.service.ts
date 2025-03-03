@@ -17,7 +17,6 @@ export const checkJobApplicationsUserIdService = async (
 
     return { isExist: exists };
   } catch (error) {
-    console.error("Error checking job application user ID:", error);
     throw error;
   }
 };

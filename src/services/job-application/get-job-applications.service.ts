@@ -7,6 +7,8 @@ interface GetJobApplicationsQuery extends PaginationQueryParams {
   search: string;
   jobId: number;
   educationLevel: string;
+  maxExpectedSalary?: number;
+  minExpectedSalary?: number;
 }
 
 export const getJobApplicationsService = async (
@@ -22,6 +24,8 @@ export const getJobApplicationsService = async (
       search,
       jobId,
       educationLevel,
+      maxExpectedSalary,
+      minExpectedSalary,
     } = query;
 
     const user = await prisma.user.findFirst({
@@ -40,8 +44,9 @@ export const getJobApplicationsService = async (
     });
 
     if (!user) {
-      throw new ApiError("User not found", 404);
+      throw new ApiError("User unauthorized", 403);
     }
+
     if (!user.companyId) {
       throw new ApiError("Admin is not associated with any company", 403);
     }
@@ -94,6 +99,18 @@ export const getJobApplicationsService = async (
       whereClause.OR = [
         { user: { fullName: { contains: search, mode: "insensitive" } } },
       ];
+    }
+
+    if (maxExpectedSalary) {
+      whereClause.expectedSalary = {
+        lt: maxExpectedSalary,
+      };
+    }
+
+    if (minExpectedSalary) {
+      whereClause.expectedSalary = {
+        gte: minExpectedSalary,
+      };
     }
 
     const orderByClause: Prisma.JobApplicationOrderByWithRelationInput[] = [
@@ -170,7 +187,7 @@ export const getJobApplicationsService = async (
                 },
               },
               select: {
-                id: true, // Select only the ID to check if the subscription exists
+                id: true,
               },
             },
           },
@@ -188,7 +205,7 @@ export const getJobApplicationsService = async (
         user: {
           ...application.user,
           hasProfessionalSubscription:
-            application.user.subscriptions.length > 0, // Add a computed field
+            application.user.subscriptions.length > 0,
         },
       })),
       meta: {

@@ -6,30 +6,33 @@ import sendApplicationAcceptanceEmail from "../../lib/handlebars/sendApplication
 import sendApplicationRejectionEmail from "../../lib/handlebars/sendApplicationRejectionEmail";
 import { ApiError } from "../../utils/apiError";
 
-interface UpdateJobApplicationBody {
-  jobId?: number;
-  userId?: number;
+interface UpdateJobApplicationCompanyBody {
   status?: JobApplication["status"];
+  notes?: string;
 }
 
-export const updateJobApplicationService = async (
-  body: UpdateJobApplicationBody,
-  id: number
+export const updateJobApplicationCompanyService = async (
+  body: UpdateJobApplicationCompanyBody,
+  id: number,
+  companyId: number
 ) => {
   try {
     if (!id || id <= 0) {
-      throw new ApiError("Invalid job application ID.", 404);
+      throw new ApiError("Invalid job application ID.", 400);
     }
 
     const { status } = body;
 
     const result = await prisma.$transaction(async (prisma) => {
       const existingJobApplication = await prisma.jobApplication.findUnique({
-        where: { id },
+        where: { id, job: { companyId } },
       });
 
       if (!existingJobApplication) {
-        throw new ApiError("Job application not found.", 404);
+        throw new ApiError(
+          "Job application not found or you don't have access.",
+          404
+        );
       }
 
       const updatedJobApplication = await prisma.jobApplication.update({

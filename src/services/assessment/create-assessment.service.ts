@@ -1,7 +1,7 @@
 import { PreTestAssessmentStatus } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
-import { generateSkillAssessmentUniqueSlug } from "../../utils/slug";
 import { ApiError } from "../../utils/apiError";
+import { generateAssessmentUniqueSlug } from "../../utils/slug";
 
 interface CreatePreTestAssessmentBody {
   jobId: number;
@@ -39,7 +39,7 @@ export const createAssessmentService = async (
       throw new ApiError("Assessment already created for the job.", 404);
     }
 
-    const slug = await generateSkillAssessmentUniqueSlug(title);
+    const slug = await generateAssessmentUniqueSlug(title);
 
     return await prisma.preTestAssessment.create({
       data: {

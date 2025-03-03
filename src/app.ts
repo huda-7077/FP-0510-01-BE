@@ -35,7 +35,12 @@ import savedJobRouter from "./routes/saved-job.router";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+    origin: [/http:\/\/localhost/, "https://supajob.my.id"],
+  })
+);
 app.use(express.json());
 
 app.get("/", (_, res) => {
