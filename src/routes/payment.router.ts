@@ -15,7 +15,12 @@ import { verifySubscription } from "../middleware/subscription.middleware";
 
 const router = Router();
 
-router.get("/", getPaymentsController);
+router.get(
+  "/",
+  verifyToken,
+  verifyRole(["DEVELOPER", "USER"]),
+  getPaymentsController
+);
 router.get(
   "/invoice",
   verifyToken,
