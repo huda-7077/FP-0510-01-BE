@@ -81,7 +81,9 @@ export const getJobController = async (
   try {
     const { slug } = req.params;
     const companyId = parseInt(req.query.companyId as string);
-    const result = await getJobService(slug, companyId);
+    const isPublished = req.query.isPublished === "true";
+    const isExpired = req.query.isExpired === "true";
+    const result = await getJobService(slug, companyId, isPublished, isExpired);
     res.status(200).send(result);
   } catch (error) {
     next(error);
