@@ -2,10 +2,10 @@ import dotenv from "dotenv";
 
 dotenv.config();
 export const PORT = process.env.PORT;
+export const REDIS_URL = process.env.REDIS_URL;
 export const JWT_SECRET = process.env.JWT_SECRET;
 export const JWT_SECRET_VERIFY_EMAIL = process.env.JWT_SECRET_VERIFY_EMAIL;
-export const JWT_SECRET_RESET_PASSWORD =
-  process.env.JWT_SECRET_RESET_PASSWORD;
+export const JWT_SECRET_RESET_PASSWORD = process.env.JWT_SECRET_RESET_PASSWORD;
 export const GMAIL_EMAIL = process.env.GMAIL_EMAIL;
 export const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 export const BASE_URL_FE = process.env.BASE_URL_FE;
