@@ -55,32 +55,6 @@ export const getJobApplicationsService = async (
       job: {
         companyId: user.companyId,
       },
-      OR: [
-        {
-          user: {
-            subscriptions: {
-              some: {
-                status: "ACTIVE",
-                expiredDate: {
-                  gt: new Date(),
-                },
-                payment: {
-                  category: {
-                    name: "PROFESSIONAL",
-                  },
-                },
-              },
-            },
-          },
-        },
-        {
-          user: {
-            subscriptions: {
-              none: {},
-            },
-          },
-        },
-      ],
     };
 
     if (jobId) {
@@ -114,13 +88,6 @@ export const getJobApplicationsService = async (
     }
 
     const orderByClause: Prisma.JobApplicationOrderByWithRelationInput[] = [
-      {
-        user: {
-          subscriptions: {
-            _count: "desc",
-          },
-        },
-      },
       sortBy === "dateOfBirth"
         ? {
             user: {
@@ -164,6 +131,7 @@ export const getJobApplicationsService = async (
             currentAddress: true,
             educationLevel: true,
             dateOfBirth: true,
+            headline: true,
             email: true,
             gender: true,
             phoneNumber: true,
@@ -174,22 +142,6 @@ export const getJobApplicationsService = async (
               },
             },
             experience: true,
-            subscriptions: {
-              where: {
-                status: "ACTIVE",
-                expiredDate: {
-                  gt: new Date(),
-                },
-                payment: {
-                  category: {
-                    name: "PROFESSIONAL",
-                  },
-                },
-              },
-              select: {
-                id: true,
-              },
-            },
           },
         },
       },
@@ -200,14 +152,7 @@ export const getJobApplicationsService = async (
     });
 
     return {
-      data: jobApplications.map((application) => ({
-        ...application,
-        user: {
-          ...application.user,
-          hasProfessionalSubscription:
-            application.user.subscriptions.length > 0,
-        },
-      })),
+      data: jobApplications,
       meta: {
         page: take !== -1 ? page : 1,
         take: take !== -1 ? take : count,
