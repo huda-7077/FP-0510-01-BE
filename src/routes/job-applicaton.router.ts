@@ -22,19 +22,13 @@ const router = Router();
 
 //! Don't forget to add the verifyToken later!
 
+router.get("/", verifyToken, getJobApplicationsController);
 router.get(
   "/user",
   verifyToken,
   verifyRole(["USER"]),
   getUserJobApplicationsController
 );
-router.get(
-  "/:id",
-  verifyToken,
-  verifyRole(["USER"]),
-  getJobApplicationController
-);
-router.get("/", verifyToken, getJobApplicationsController);
 router.get(
   "/check-applicant",
   verifyToken,
@@ -43,6 +37,12 @@ router.get(
 router.get("/total", getJobApplicationTotalController);
 router.get("/avg-salary/position", getAvgSalaryByPositionController);
 router.get("/avg-salary/province", getAvgSalaryByProvinceController);
+router.get(
+  "/:id",
+  verifyToken,
+  verifyRole(["USER"]),
+  getJobApplicationController
+);
 router.post(
   "/",
   verifyToken,
