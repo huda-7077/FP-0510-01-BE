@@ -15,14 +15,22 @@ export const searchService = {
     try {
       const jobs = await prisma.job.findMany({
         where: {
-          OR: [
-            { title: { contains: query, mode: "insensitive" } },
-            { tags: { has: query } },
+          AND: [
+            {
+              OR: [
+                { title: { contains: query, mode: "insensitive" } },
+                { tags: { has: query } },
+              ],
+            },
+            { isPublished: true },
+            { applicationDeadline: { gt: new Date() } },
+            { isDeleted: false },
           ],
         },
         select: {
           id: true,
           title: true,
+          slug: true,
         },
         take: 5,
       });
@@ -30,6 +38,7 @@ export const searchService = {
       const companiesRaw = await prisma.company.findMany({
         where: {
           name: { contains: query, mode: "insensitive" },
+          isDeleted: false,
         },
         select: {
           id: true,
