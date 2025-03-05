@@ -48,11 +48,6 @@ export const verifyEmailService = async (userId: number, tokenId: number) => {
       data: { isVerified: true },
     });
 
-    // await prisma.verificationToken.update({
-    //   where: { id: tokenId },
-    //   data: { isValid: false },
-    // });
-
     const { password: _, ...userWithoutPassword } = user;
 
     return {
