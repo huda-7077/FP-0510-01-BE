@@ -1,7 +1,13 @@
 import { prisma } from "../../lib/prisma";
+import { redisClient } from "../../lib/redis";
 
 export const getDeveloperOverviewService = async () => {
   try {
+    const cachedData = await redisClient.get("developerOverviewData");
+    if (cachedData) {
+      return JSON.parse(cachedData);
+    }
+
     const totalUsers = await prisma.user.count();
     const verifiedUsers = await prisma.user.count({
       where: {
@@ -34,7 +40,7 @@ export const getDeveloperOverviewService = async () => {
       },
     });
 
-    return {
+    const overviewData = {
       totalUsers,
       verifiedUsers,
       totalSubscriptions,
@@ -44,6 +50,14 @@ export const getDeveloperOverviewService = async () => {
       totalSkillAssessmentsPublished,
       totalPaidPayments,
     };
+
+    await redisClient.setEx(
+      "developerOverviewData",
+      30 * 60,
+      JSON.stringify(overviewData)
+    );
+
+    return overviewData;
   } catch (error) {
     throw error;
   }
