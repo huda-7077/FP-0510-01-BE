@@ -20,7 +20,6 @@ import jobRouter from "./routes/job.router";
 import locationRouter from "./routes/location.router";
 import overviewRouter from "./routes/overview.router";
 import paymentRouter from "./routes/payment.router";
-import sampleRouter from "./routes/sample.router";
 import searchRouter from "./routes/search.router";
 import employeeRouter from "./routes/employee.router";
 import skillAssessmentQuestionRouter from "./routes/skill-assessment-question.router";
@@ -48,7 +47,6 @@ app.get("/", (_, res) => {
 });
 
 //routes
-app.use("/samples", sampleRouter);
 app.use("/users", userRouter);
 app.use("/company-locations", companyLocationRouter);
 app.use("/jobs", jobRouter);
