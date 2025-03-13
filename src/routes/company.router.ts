@@ -20,7 +20,7 @@ router.get(
   verifyRole(["ADMIN"]),
   getCompanyProfileController
 );
-router.get("/:id", getCompanyController);
+router.get("/:slug", getCompanyController);
 router.patch(
   "/profile",
   verifyToken,

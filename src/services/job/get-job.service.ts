@@ -45,6 +45,7 @@ export const getJobService = async (
             name: true,
             logo: true,
             industry: true,
+            slug: true,
           },
         },
         preTestAssessments: {

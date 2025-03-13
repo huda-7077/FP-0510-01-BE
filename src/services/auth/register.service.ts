@@ -2,6 +2,7 @@ import { User } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { hashPassword } from "../../lib/argon";
 import { sendVerificationToken } from "./verification.service";
+import { generateCompanyUniqueSlug } from "../../utils/slug";
 
 export const registerService = async (body: User) => {
   try {
@@ -42,9 +43,12 @@ export const registerService = async (body: User) => {
       }
 
       case "ADMIN": {
+        const slug = await generateCompanyUniqueSlug(body.fullName);
+
         const company = await prisma.company.create({
           data: {
             name: body.fullName,
+            slug,
             establishedYear: new Date().getFullYear(),
             isDeleted: false,
           },
