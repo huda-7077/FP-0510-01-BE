@@ -1,10 +1,10 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 
-export const getCompanyService = async (id: number) => {
+export const getCompanyService = async (slug: string) => {
   try {
     const whereClause: Prisma.CompanyWhereUniqueInput = {
-      id,
+      slug,
       isDeleted: false,
     };
 

@@ -43,6 +43,7 @@ export const searchService = {
         select: {
           id: true,
           name: true,
+          slug: true,
         },
         take: 5,
       });
@@ -50,6 +51,7 @@ export const searchService = {
       const companies = companiesRaw.map((company) => ({
         id: company.id,
         title: company.name,
+        slug: company.slug,
       }));
 
       return { jobs, companies };

@@ -46,9 +46,8 @@ export const getCompanyController = async (
   next: NextFunction
 ) => {
   try {
-    const companyId = Number(req.params.id);
-
-    const result = await getCompanyService(companyId);
+    const { slug } = req.params;
+    const result = await getCompanyService(slug);
 
     res.status(200).send(result);
   } catch (error) {

@@ -11,7 +11,9 @@ export const getJobApplicationService = async (userId: number, id: number) => {
       include: {
         job: {
           include: {
-            company: { select: { name: true, logo: true, industry: true } },
+            company: {
+              select: { name: true, logo: true, industry: true, slug: true },
+            },
             companyLocation: {
               select: {
                 regency: {

@@ -1,5 +1,6 @@
 import { cloudinaryRemove, cloudinaryUpload } from "../../lib/cloudinary";
 import { prisma } from "../../lib/prisma";
+import { generateCompanyUniqueSlug } from "../../utils/slug";
 
 interface UpdateCompanyProfileProps {
   name: string;
@@ -46,10 +47,13 @@ export const updateCompanyProfileService = async (
       logoUrl = uploadResult.secure_url;
     }
 
+    const slug = await generateCompanyUniqueSlug(body.name);
+
     await prisma.company.update({
       where: { id: user.company.id },
       data: {
         name: body.name,
+        slug,
         description: body.description,
         industry: body.industry,
         employeeCount: body.employeeCount

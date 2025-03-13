@@ -102,6 +102,7 @@ model ResetPasswordToken {
 model Company {
   id               Int               @id @default(autoincrement())
   name             String
+  slug             String?           @unique
   description      String?
   industry         String?
   logo             String?
