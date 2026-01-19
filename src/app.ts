@@ -37,8 +37,12 @@ const app = express();
 app.use(
   cors({
     credentials: true,
-    origin: [/http:\/\/localhost/, "https://supajob.my.id"],
-  })
+    origin: [
+      /http:\/\/localhost/,
+      "https://supajob.my.id",
+      "https://supajob.muhammadmasyhuda.my.id",
+    ],
+  }),
 );
 app.use(express.json());
 
