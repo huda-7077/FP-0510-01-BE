@@ -14,7 +14,7 @@ interface UpdateJobApplicationBody {
 
 export const updateJobApplicationService = async (
   body: UpdateJobApplicationBody,
-  id: number
+  id: number,
 ) => {
   try {
     if (!id || id <= 0) {
@@ -69,8 +69,7 @@ export const updateJobApplicationService = async (
         status === "IN_REVIEW" &&
         updatedJobApplication.job.requiresAssessment
       ) {
-        const assessmentId =
-          updatedJobApplication.job.preTestAssessments[0]?.id;
+        const assessmentId = updatedJobApplication.job.preTestAssessments?.id;
 
         if (!assessmentId) {
           throw new ApiError("No assessment available for this job.", 404);
@@ -93,7 +92,7 @@ export const updateJobApplicationService = async (
           company_name: updatedJobApplication.job.company.name,
           applicant_name: updatedJobApplication.user.fullName,
           company_logo: updatedJobApplication.job.company.logo || undefined,
-          assessment_url: `${BASE_URL_FE}/pre-test-assessment/${updatedJobApplication.job.preTestAssessments[0].slug}`,
+          assessment_url: `${BASE_URL_FE}/pre-test-assessment/${updatedJobApplication.job.preTestAssessments?.slug}`,
         });
       } catch (emailError) {
         console.error("Failed to send assessment reminder email:", emailError);
@@ -110,7 +109,7 @@ export const updateJobApplicationService = async (
       } catch (emailError) {
         console.error(
           "Failed to send application acceptance email:",
-          emailError
+          emailError,
         );
       }
     } else if (status === "REJECTED") {
@@ -125,7 +124,7 @@ export const updateJobApplicationService = async (
       } catch (emailError) {
         console.error(
           "Failed to send application rejection email:",
-          emailError
+          emailError,
         );
       }
     }

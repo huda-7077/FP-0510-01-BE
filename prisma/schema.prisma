@@ -159,10 +159,10 @@ model Regency {
 }
 
 model Job {
-  id                  Int                 @id @default(autoincrement())
+  id                  Int                @id @default(autoincrement())
   companyId           Int
   title               String
-  slug                String              @unique
+  slug                String             @unique
   description         String
   bannerImage         String?
   category            String
@@ -173,12 +173,12 @@ model Job {
   requiresAssessment  Boolean
   isDeleted           Boolean
   companyLocationId   Int
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
   jobApplications     JobApplication[]
-  company             Company             @relation(fields: [companyId], references: [id])
-  companyLocation     CompanyLocation     @relation(fields: [companyLocationId], references: [id])
-  preTestAssessments  PreTestAssessment[]
+  company             Company            @relation(fields: [companyId], references: [id])
+  companyLocation     CompanyLocation    @relation(fields: [companyLocationId], references: [id])
+  preTestAssessments  PreTestAssessment?
   savedJobs           SavedJob[]
 
   @@map("jobs")
