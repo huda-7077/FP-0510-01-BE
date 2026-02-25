@@ -1,10 +1,10 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
 }
 
 model Sample {
@@ -37,22 +37,22 @@ model User {
   isDeleted                    Boolean
   createdAt                    DateTime                       @default(now())
   updatedAt                    DateTime                       @updatedAt
+  PreTestAssessmentUserAttempt PreTestAssessmentUserAttempt[]
+  certificates                 Certificate[]
+  companyReviews               CompanyReview[]
+  employees                    Employee[]
+  jobApplications              JobApplication[]
+  payments                     Payment[]
+  resetPasswordToken           ResetPasswordToken[]
+  savedJobs                    SavedJob[]
+  skillAssessmentUserAttempts  SkillAssessmentUserAttempt[]
+  subscriptions                Subscription[]
+  userBadges                   UserBadge[]
+  userAssessments              UserPreTestAssessment[]
   company                      Company?                       @relation(fields: [companyId], references: [id])
   regency                      Regency?                       @relation(fields: [regencyId], references: [id])
-  jobApplications              JobApplication[]
-  userBadges                   UserBadge[]
-  companyReviews               CompanyReview[]
-  savedJobs                    SavedJob[]
-  employees                    Employee[]
-  certificates                 Certificate[]
-  userAssessments              UserPreTestAssessment[]
   verificationTokens           VerificationToken[]
-  resetPasswordToken           ResetPasswordToken[]
-  payments                     Payment[]
-  subscriptions                Subscription[]
   experience                   WorkExperience[]
-  skillAssessmentUserAttempts  SkillAssessmentUserAttempt[]
-  PreTestAssessmentUserAttempt PreTestAssessmentUserAttempt[]
 
   @@map("users")
 }
@@ -66,9 +66,9 @@ model WorkExperience {
   endDate      DateTime?
   isCurrentJob Boolean   @default(false)
   description  String?
-  user         User      @relation(fields: [userId], references: [id])
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id])
 
   @@map("work_experiences")
 }
@@ -113,11 +113,11 @@ model Company {
   isDeleted        Boolean
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
-  users            User[]
   companyLocations CompanyLocation[]
-  jobs             Job[]
   companyReviews   CompanyReview[]
   employees        Employee[]
+  jobs             Job[]
+  users            User[]
 
   @@map("companies")
 }
@@ -151,9 +151,9 @@ model Regency {
   provinceId       Int
   regency          String
   type             String
+  companyLocations CompanyLocation[]
   province         Province          @relation(fields: [provinceId], references: [id])
   users            User[]
-  companyLocations CompanyLocation[]
 
   @@map("regencies")
 }
@@ -173,13 +173,13 @@ model Job {
   requiresAssessment  Boolean
   isDeleted           Boolean
   companyLocationId   Int
-  companyLocation     CompanyLocation     @relation(fields: [companyLocationId], references: [id])
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  company             Company             @relation(fields: [companyId], references: [id])
   jobApplications     JobApplication[]
-  savedJobs           SavedJob[]
+  company             Company             @relation(fields: [companyId], references: [id])
+  companyLocation     CompanyLocation     @relation(fields: [companyLocationId], references: [id])
   preTestAssessments  PreTestAssessment[]
+  savedJobs           SavedJob[]
 
   @@map("jobs")
 }
@@ -195,9 +195,9 @@ model JobApplication {
   notes          String?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
+  interviews     Interview[]
   job            Job               @relation(fields: [jobId], references: [id])
   user           User              @relation(fields: [userId], references: [id])
-  interviews     Interview[]
 
   @@map("job_applications")
 }
@@ -244,8 +244,8 @@ model Subscription {
   status          SubscriptionStatus
   assessmentLimit Int                @default(0)
   createdAt       DateTime           @default(now())
-  user            User               @relation(fields: [userId], references: [id])
   payment         Payment            @relation(fields: [paymentId], references: [id])
+  user            User               @relation(fields: [userId], references: [id])
 
   @@map("subscriptions")
 }
@@ -291,8 +291,8 @@ model SavedJob {
   userId    Int
   jobId     Int
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
   job       Job      @relation(fields: [jobId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@map("saved_jobs")
 }
@@ -333,8 +333,8 @@ model SkillAssessmentQuestion {
   createdAt                  DateTime                    @default(now())
   updatedAt                  DateTime                    @updatedAt
   skillAssessment            SkillAssessment             @relation(fields: [skillAssessmentId], references: [id])
-  skillAssessmentOptions     SkillAssessmentOption[]
   skillAssessmentUserAnswers SkillAssessmentUserAnswer[]
+  skillAssessmentOptions     SkillAssessmentOption[]
 
   @@map("skill_assessment_questions")
 }
@@ -345,8 +345,8 @@ model SkillAssessmentOption {
   option                     String
   isCorrect                  Boolean
   createdAt                  DateTime                    @default(now())
-  skillAssessmentQuestion    SkillAssessmentQuestion     @relation(fields: [skillAssessmentQuestionId], references: [id])
   skillAssessmentUserAnswers SkillAssessmentUserAnswer[]
+  skillAssessmentQuestion    SkillAssessmentQuestion     @relation(fields: [skillAssessmentQuestionId], references: [id])
 
   @@map("skill_assessments_options")
 }
@@ -360,10 +360,10 @@ model SkillAssessmentUserAttempt {
   status                    SkillAssessmentUserAttemptStatus @default(STARTED)
   createdAt                 DateTime                         @default(now())
   updatedAt                 DateTime                         @updatedAt
-  user                      User                             @relation(fields: [userId], references: [id])
-  skillAssessment           SkillAssessment                  @relation(fields: [skillAssessmentId], references: [id])
-  skillAssessmentUserAnswer SkillAssessmentUserAnswer[]
   certificates              Certificate[]
+  skillAssessmentUserAnswer SkillAssessmentUserAnswer[]
+  skillAssessment           SkillAssessment                  @relation(fields: [skillAssessmentId], references: [id])
+  user                      User                             @relation(fields: [userId], references: [id])
 
   @@map("skill_assessment_user_attempts")
 }
@@ -374,8 +374,8 @@ model SkillAssessmentUserAnswer {
   skillAssessmentQuestionId    Int
   selectedOptionId             Int
   createdAt                    DateTime                   @default(now())
-  skillAssessmentQuestion      SkillAssessmentQuestion    @relation(fields: [skillAssessmentQuestionId], references: [id])
   skillAssessmentOption        SkillAssessmentOption      @relation(fields: [selectedOptionId], references: [id])
+  skillAssessmentQuestion      SkillAssessmentQuestion    @relation(fields: [skillAssessmentQuestionId], references: [id])
   skillAssessmentUserAttempt   SkillAssessmentUserAttempt @relation(fields: [skillAssessmentUserAttemptId], references: [id])
 
   @@unique([skillAssessmentUserAttemptId, skillAssessmentQuestionId])
@@ -389,8 +389,8 @@ model Certificate {
   uuid                         String                     @default(uuid())
   certificateUrl               String?
   createdAt                    DateTime                   @default(now())
-  user                         User                       @relation(fields: [userId], references: [id])
   skillAssessmentUserAttempt   SkillAssessmentUserAttempt @relation(fields: [skillAssessmentUserAttemptId], references: [id])
+  user                         User                       @relation(fields: [userId], references: [id])
   UserBadge                    UserBadge?
 
   @@map("certificates")
@@ -420,10 +420,10 @@ model PreTestAssessment {
   status                       PreTestAssessmentStatus
   createdAt                    DateTime                       @default(now())
   updatedAt                    DateTime                       @updatedAt
-  job                          Job                            @relation(fields: [jobId], references: [id])
-  preTestAssessmentQuestions   PreTestAssessmentQuestion[]
-  userPreTestAssessments       UserPreTestAssessment[]
   PreTestAssessmentUserAttempt PreTestAssessmentUserAttempt[]
+  preTestAssessmentQuestions   PreTestAssessmentQuestion[]
+  job                          Job                            @relation(fields: [jobId], references: [id])
+  userPreTestAssessments       UserPreTestAssessment[]
 
   @@map("pre_test_assessments")
 }
@@ -434,8 +434,8 @@ model PreTestAssessmentQuestion {
   question                    String
   createdAt                   DateTime                      @default(now())
   updatedAt                   DateTime                      @updatedAt
-  preTestAssessment           PreTestAssessment             @relation(fields: [preTestAssessmentId], references: [id])
   preTestAssessmentOptions    PreTestAssessmentOption[]
+  preTestAssessment           PreTestAssessment             @relation(fields: [preTestAssessmentId], references: [id])
   PreTestAssessmentUserAnswer PreTestAssessmentUserAnswer[]
 
   @@map("pre_test_assessment_questions")
@@ -461,8 +461,8 @@ model PreTestAssessmentUserAttempt {
   status                      PreTestAssessmentUserAttemptStatus @default(STARTED)
   createdAt                   DateTime                           @default(now())
   updatedAt                   DateTime                           @updatedAt
-  user                        User                               @relation(fields: [userId], references: [id])
   preTestAssessment           PreTestAssessment                  @relation(fields: [preTestAssessmentId], references: [id])
+  user                        User                               @relation(fields: [userId], references: [id])
   preTestAssessmentUserAnswer PreTestAssessmentUserAnswer[]
 }
 
@@ -473,8 +473,8 @@ model PreTestAssessmentUserAnswer {
   selectedOptionId               Int
   createdAt                      DateTime                     @default(now())
   preTestAssessmentQuestion      PreTestAssessmentQuestion    @relation(fields: [preTestAssessmentQuestionId], references: [id])
-  preTestAssessmentOption        PreTestAssessmentOption      @relation(fields: [selectedOptionId], references: [id])
   PreTestAssessmentUserAttempt   PreTestAssessmentUserAttempt @relation(fields: [preTestAssessmentUserAttemptId], references: [id])
+  preTestAssessmentOption        PreTestAssessmentOption      @relation(fields: [selectedOptionId], references: [id])
 
   @@unique([preTestAssessmentQuestionId, preTestAssessmentUserAttemptId])
   @@map("pre_test_assessment_user_answers")
